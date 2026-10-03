@@ -1,6 +1,6 @@
 {
   "project": "Pocket Progressive Reader / Attention-Scaffolded Reading",
-  "current_artifact": "pocket_progressive_reader_hardware_lab_v4.html",
+  "current_artifact": "PocketReader.xcodeproj",
   "reference_script": "chatgpt_progressive_reader_v2.3.2.user.js",
   "presentation_modes": [
     "Current Only",
@@ -17,5 +17,13 @@
     "connectivity_mvp": "USB-C required",
     "wireless": "later / optional"
   },
-  "next_preferred_step": "mobile-first iPhone PWA behavioral prototype before hardware purchase"
+  "next_preferred_step": "test the native iPhone prototype before purchasing hardware",
+  "native_app": "PocketReader/",
+  "desktop_reference": "pocket_progressive_reader_hardware_lab_v4.html",
+  "presentation_structure": [
+    "immediate reader home",
+    "utility settings"
+  ],
+  "design_reference": "docs/design/approved-home.png",
+  "native_decision_date": "2026-10-03"
 }

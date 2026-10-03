@@ -1,6 +1,8 @@
 # Pocket Progressive Reader / Attention-Scaffolded Reading
 ## Codex Handoff
 
+> **2026-10-03 owner decision update:** The mobile step is now a native SwiftUI iPhone app, replacing the PWA suggestion below. Home immediately shows the reader, with silver iPod Classic inspired material, inset panel and ivory click wheel; all other controls live in a minimalist utility settings sheet. No home title, library or session evaluation UI. `PocketReader.xcodeproj` is the current implementation; the HTML and userscript remain references. See `docs/IMPLEMENTATION.md`, `docs/design/approved-home.png` and `docs/VERIFICATION.md` for the current build and evidence. Historical sections below preserve how the interaction evolved.
+
 ### 0. Purpose
 
 This file restores the current project context inside Codex. Do not restart ideation from zero.

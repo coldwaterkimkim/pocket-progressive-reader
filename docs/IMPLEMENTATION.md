@@ -10,6 +10,9 @@
 - Center is intentionally inert; it does not toggle progress or move the focus.
 - Future content hidden; current line fixed at the bottom; past-only or sentence-bound history optional.
 - Rendered pixel width and a user-calibrated physical-size mode; phone PPI is not inferred.
+- Default font is 26 panel pixels. Current baseline reserves space for optional progress so toggling it cannot shift text.
+- Text drafts require explicit apply; unfinished drafts offer continue/apply/discard. TXT transfer uses the system Files picker and the app's Documents folder; private saved reading state stays in Application Support.
+- Navigation updates immediately and coalesces local writes for 250ms; settings changes and background transitions flush saved state.
 
 ## Reference implementation differences to correct
 
