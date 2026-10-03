@@ -1,0 +1,21 @@
+{
+  "project": "Pocket Progressive Reader / Attention-Scaffolded Reading",
+  "current_artifact": "pocket_progressive_reader_hardware_lab_v4.html",
+  "reference_script": "chatgpt_progressive_reader_v2.3.2.user.js",
+  "presentation_modes": [
+    "Current Only",
+    "Past-only Typewriter",
+    "Sentence-bounded Typewriter"
+  ],
+  "focus_policy": "bottom-fixed current reveal unit",
+  "future_content": "hidden",
+  "preferred_segmentation_default": "Visual balanced",
+  "hardware_direction": {
+    "mcu": "Seeed XIAO ESP32-S3 Plus",
+    "navigation": "ANO directional navigation + rotary encoder via I2C adapter",
+    "battery": "LiPo, capacity unresolved",
+    "connectivity_mvp": "USB-C required",
+    "wireless": "later / optional"
+  },
+  "next_preferred_step": "mobile-first iPhone PWA behavioral prototype before hardware purchase"
+}

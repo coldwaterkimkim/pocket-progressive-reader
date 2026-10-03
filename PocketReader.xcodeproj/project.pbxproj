@@ -1,0 +1,512 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2301A639CF746821746DDF13 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F239D4E842D69538F2150338 /* HomeView.swift */; };
+		562ADD339C2C9079F3FEAFF7 /* PocketReaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4E33CA21876231448933FB9 /* PocketReaderApp.swift */; };
+		BE9D0390F005A9EE6FB91600 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533ADFFCE2F3E2529619387B /* Models.swift */; };
+		D72C9FB8E0FA722EF9662727 /* MetalSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271A653C0C412F1F182688AC /* MetalSurface.swift */; };
+		DAE53B64059D80FF5636ABAA /* ReadingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9FBB0D14FB892CAE54A7D28 /* ReadingEngine.swift */; };
+		F0B3646EEA19651E8C458560 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960FD7417A47B513E0F0D516 /* SettingsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		ED9BC47F76F81C024B60D197 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 93900DE49BEA7E81FD5641C3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2621E7B44E220ACC03D2CE5A;
+			remoteInfo = PocketReader;
+		};
+		F500B70765D03C99A4DF3925 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 93900DE49BEA7E81FD5641C3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2621E7B44E220ACC03D2CE5A;
+			remoteInfo = PocketReader;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		271A653C0C412F1F182688AC /* MetalSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalSurface.swift; sourceTree = "<group>"; };
+		4C891C6B93236FCDABA4012D /* PocketReader.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PocketReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		533ADFFCE2F3E2529619387B /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		702F6ECFFE79B36D61632D59 /* PocketReaderUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PocketReaderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D0B8129A62F774519E3EE24 /* PocketReaderTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PocketReaderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		960FD7417A47B513E0F0D516 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A4E33CA21876231448933FB9 /* PocketReaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketReaderApp.swift; sourceTree = "<group>"; };
+		D9FBB0D14FB892CAE54A7D28 /* ReadingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingEngine.swift; sourceTree = "<group>"; };
+		F239D4E842D69538F2150338 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		04982A1D65400DBC129AAC12 = {
+			isa = PBXGroup;
+			children = (
+				0A0A55627377ABB0EC7F6D8C /* PocketReader */,
+				6A8519847FF19CBF6676F858 /* PocketReaderTests */,
+				A3B2A66917EFCDDBC4672098 /* PocketReaderUITests */,
+				F57421B67CB8112A48A96646 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0A0A55627377ABB0EC7F6D8C /* PocketReader */ = {
+			isa = PBXGroup;
+			children = (
+				F239D4E842D69538F2150338 /* HomeView.swift */,
+				271A653C0C412F1F182688AC /* MetalSurface.swift */,
+				533ADFFCE2F3E2529619387B /* Models.swift */,
+				A4E33CA21876231448933FB9 /* PocketReaderApp.swift */,
+				D9FBB0D14FB892CAE54A7D28 /* ReadingEngine.swift */,
+				960FD7417A47B513E0F0D516 /* SettingsView.swift */,
+			);
+			path = PocketReader;
+			sourceTree = "<group>";
+		};
+		6A8519847FF19CBF6676F858 /* PocketReaderTests */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = PocketReaderTests;
+			sourceTree = "<group>";
+		};
+		A3B2A66917EFCDDBC4672098 /* PocketReaderUITests */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = PocketReaderUITests;
+			sourceTree = "<group>";
+		};
+		F57421B67CB8112A48A96646 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4C891C6B93236FCDABA4012D /* PocketReader.app */,
+				8D0B8129A62F774519E3EE24 /* PocketReaderTests.xctest */,
+				702F6ECFFE79B36D61632D59 /* PocketReaderUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0A17BB4F204E8616E2B660FC /* PocketReaderTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0CF8B6A6D59E7BCBEA98A266 /* Build configuration list for PBXNativeTarget "PocketReaderTests" */;
+			buildPhases = (
+				3C73CC3C4D7FF7310CAD146E /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1C1F4BC0E2A603EB575E0003 /* PBXTargetDependency */,
+			);
+			name = PocketReaderTests;
+			packageProductDependencies = (
+			);
+			productName = PocketReaderTests;
+			productReference = 8D0B8129A62F774519E3EE24 /* PocketReaderTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		2621E7B44E220ACC03D2CE5A /* PocketReader */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B325E206A67211488E0523C3 /* Build configuration list for PBXNativeTarget "PocketReader" */;
+			buildPhases = (
+				5797567145EBA52863810BA6 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PocketReader;
+			packageProductDependencies = (
+			);
+			productName = PocketReader;
+			productReference = 4C891C6B93236FCDABA4012D /* PocketReader.app */;
+			productType = "com.apple.product-type.application";
+		};
+		310F1D950F92C6F08B210475 /* PocketReaderUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E19249586866217693307D12 /* Build configuration list for PBXNativeTarget "PocketReaderUITests" */;
+			buildPhases = (
+				C341C5A1FEF57A9C79112088 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B67E6A323A58DD310E63203F /* PBXTargetDependency */,
+			);
+			name = PocketReaderUITests;
+			packageProductDependencies = (
+			);
+			productName = PocketReaderUITests;
+			productReference = 702F6ECFFE79B36D61632D59 /* PocketReaderUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		93900DE49BEA7E81FD5641C3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					0A17BB4F204E8616E2B660FC = {
+						ProvisioningStyle = Automatic;
+					};
+					2621E7B44E220ACC03D2CE5A = {
+						ProvisioningStyle = Automatic;
+					};
+					310F1D950F92C6F08B210475 = {
+						ProvisioningStyle = Automatic;
+						TestTargetID = 2621E7B44E220ACC03D2CE5A;
+					};
+				};
+			};
+			buildConfigurationList = CC9856D00020BFE59836D19D /* Build configuration list for PBXProject "PocketReader" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 04982A1D65400DBC129AAC12;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F57421B67CB8112A48A96646 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2621E7B44E220ACC03D2CE5A /* PocketReader */,
+				0A17BB4F204E8616E2B660FC /* PocketReaderTests */,
+				310F1D950F92C6F08B210475 /* PocketReaderUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3C73CC3C4D7FF7310CAD146E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5797567145EBA52863810BA6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2301A639CF746821746DDF13 /* HomeView.swift in Sources */,
+				D72C9FB8E0FA722EF9662727 /* MetalSurface.swift in Sources */,
+				BE9D0390F005A9EE6FB91600 /* Models.swift in Sources */,
+				562ADD339C2C9079F3FEAFF7 /* PocketReaderApp.swift in Sources */,
+				DAE53B64059D80FF5636ABAA /* ReadingEngine.swift in Sources */,
+				F0B3646EEA19651E8C458560 /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C341C5A1FEF57A9C79112088 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1C1F4BC0E2A603EB575E0003 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2621E7B44E220ACC03D2CE5A /* PocketReader */;
+			targetProxy = F500B70765D03C99A4DF3925 /* PBXContainerItemProxy */;
+		};
+		B67E6A323A58DD310E63203F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2621E7B44E220ACC03D2CE5A /* PocketReader */;
+			targetProxy = ED9BC47F76F81C024B60D197 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		171A08B0C8934E5340393504 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.coldwater.PocketReaderTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PocketReader.app/PocketReader";
+			};
+			name = Debug;
+		};
+		17E5C64A7749424856F74D4F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.coldwater.PocketReaderTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PocketReader.app/PocketReader";
+			};
+			name = Release;
+		};
+		3BCF192BB1A251AA449D5921 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.coldwater.PocketReaderUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = PocketReader;
+			};
+			name = Release;
+		};
+		3C67C45D3B5F2EAB8210927C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Pocket Reader";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.coldwater.pocketreader;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		550562350B52DCA923D58C57 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		68B91534FEEC06CE9F92BA66 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.coldwater.PocketReaderUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = PocketReader;
+			};
+			name = Debug;
+		};
+		7299220A8D6B6359E7B14672 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		8981293DFFCBE1ED78AED2B8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Pocket Reader";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.coldwater.pocketreader;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0CF8B6A6D59E7BCBEA98A266 /* Build configuration list for PBXNativeTarget "PocketReaderTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				171A08B0C8934E5340393504 /* Debug */,
+				17E5C64A7749424856F74D4F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B325E206A67211488E0523C3 /* Build configuration list for PBXNativeTarget "PocketReader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8981293DFFCBE1ED78AED2B8 /* Debug */,
+				3C67C45D3B5F2EAB8210927C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CC9856D00020BFE59836D19D /* Build configuration list for PBXProject "PocketReader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7299220A8D6B6359E7B14672 /* Debug */,
+				550562350B52DCA923D58C57 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E19249586866217693307D12 /* Build configuration list for PBXNativeTarget "PocketReaderUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				68B91534FEEC06CE9F92BA66 /* Debug */,
+				3BCF192BB1A251AA449D5921 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 93900DE49BEA7E81FD5641C3 /* Project object */;
+}

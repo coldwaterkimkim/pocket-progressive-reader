@@ -1,0 +1,14 @@
+Read `HANDOFF.md` first, then inspect `pocket_progressive_reader_hardware_lab_v4.html` and `chatgpt_progressive_reader_v2.3.2.user.js`.
+
+Treat the handoff as the authoritative product/design context and the code as the authoritative current implementation. Do not restart ideation from zero.
+
+First, give me a concise synchronization report:
+1. what you understand the product hypothesis to be,
+2. the current interaction model,
+3. the current hardware decision state,
+4. the most important unresolved questions,
+5. what in the existing code you would reuse vs rewrite.
+
+Do not implement anything until after that synchronization report.
+
+After synchronization, the likely next task is a mobile-first iPhone PWA behavioral prototype, but wait for my instruction before coding.
