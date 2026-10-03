@@ -8,10 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		2301A639CF746821746DDF13 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F239D4E842D69538F2150338 /* HomeView.swift */; };
+		2E4BFAF66903C6422D81F9C7 /* ClickWheel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4586EEAACC54B83AABF94D9A /* ClickWheel.swift */; };
+		438F2E2FF7A2861780E4A615 /* ReaderFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97471180F9DC7F7E62F3F5B9 /* ReaderFlowTests.swift */; };
 		562ADD339C2C9079F3FEAFF7 /* PocketReaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4E33CA21876231448933FB9 /* PocketReaderApp.swift */; };
+		65DD2BFC36344B6529764302 /* ReaderDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4431E1DA64519729ED07E /* ReaderDisplay.swift */; };
+		A4B37D00B86D737C247667E3 /* ReadingEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71C214930088494A833F691 /* ReadingEngineTests.swift */; };
 		BE9D0390F005A9EE6FB91600 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533ADFFCE2F3E2529619387B /* Models.swift */; };
 		D72C9FB8E0FA722EF9662727 /* MetalSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271A653C0C412F1F182688AC /* MetalSurface.swift */; };
 		DAE53B64059D80FF5636ABAA /* ReadingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9FBB0D14FB892CAE54A7D28 /* ReadingEngine.swift */; };
+		E8508ACA0A417772A370B6CC /* ReaderStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1509A5C24A166EDC9047DA2 /* ReaderStore.swift */; };
 		F0B3646EEA19651E8C458560 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960FD7417A47B513E0F0D516 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
@@ -34,12 +39,17 @@
 
 /* Begin PBXFileReference section */
 		271A653C0C412F1F182688AC /* MetalSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalSurface.swift; sourceTree = "<group>"; };
+		4586EEAACC54B83AABF94D9A /* ClickWheel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClickWheel.swift; sourceTree = "<group>"; };
 		4C891C6B93236FCDABA4012D /* PocketReader.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PocketReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		533ADFFCE2F3E2529619387B /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		702F6ECFFE79B36D61632D59 /* PocketReaderUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PocketReaderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D0B8129A62F774519E3EE24 /* PocketReaderTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PocketReaderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		960FD7417A47B513E0F0D516 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		97471180F9DC7F7E62F3F5B9 /* ReaderFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderFlowTests.swift; sourceTree = "<group>"; };
+		9EE4431E1DA64519729ED07E /* ReaderDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderDisplay.swift; sourceTree = "<group>"; };
 		A4E33CA21876231448933FB9 /* PocketReaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketReaderApp.swift; sourceTree = "<group>"; };
+		A71C214930088494A833F691 /* ReadingEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingEngineTests.swift; sourceTree = "<group>"; };
+		D1509A5C24A166EDC9047DA2 /* ReaderStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderStore.swift; sourceTree = "<group>"; };
 		D9FBB0D14FB892CAE54A7D28 /* ReadingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingEngine.swift; sourceTree = "<group>"; };
 		F239D4E842D69538F2150338 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -58,10 +68,13 @@
 		0A0A55627377ABB0EC7F6D8C /* PocketReader */ = {
 			isa = PBXGroup;
 			children = (
+				4586EEAACC54B83AABF94D9A /* ClickWheel.swift */,
 				F239D4E842D69538F2150338 /* HomeView.swift */,
 				271A653C0C412F1F182688AC /* MetalSurface.swift */,
 				533ADFFCE2F3E2529619387B /* Models.swift */,
 				A4E33CA21876231448933FB9 /* PocketReaderApp.swift */,
+				9EE4431E1DA64519729ED07E /* ReaderDisplay.swift */,
+				D1509A5C24A166EDC9047DA2 /* ReaderStore.swift */,
 				D9FBB0D14FB892CAE54A7D28 /* ReadingEngine.swift */,
 				960FD7417A47B513E0F0D516 /* SettingsView.swift */,
 			);
@@ -71,6 +84,7 @@
 		6A8519847FF19CBF6676F858 /* PocketReaderTests */ = {
 			isa = PBXGroup;
 			children = (
+				A71C214930088494A833F691 /* ReadingEngineTests.swift */,
 			);
 			path = PocketReaderTests;
 			sourceTree = "<group>";
@@ -78,6 +92,7 @@
 		A3B2A66917EFCDDBC4672098 /* PocketReaderUITests */ = {
 			isa = PBXGroup;
 			children = (
+				97471180F9DC7F7E62F3F5B9 /* ReaderFlowTests.swift */,
 			);
 			path = PocketReaderUITests;
 			sourceTree = "<group>";
@@ -195,6 +210,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A4B37D00B86D737C247667E3 /* ReadingEngineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -202,10 +218,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2E4BFAF66903C6422D81F9C7 /* ClickWheel.swift in Sources */,
 				2301A639CF746821746DDF13 /* HomeView.swift in Sources */,
 				D72C9FB8E0FA722EF9662727 /* MetalSurface.swift in Sources */,
 				BE9D0390F005A9EE6FB91600 /* Models.swift in Sources */,
 				562ADD339C2C9079F3FEAFF7 /* PocketReaderApp.swift in Sources */,
+				65DD2BFC36344B6529764302 /* ReaderDisplay.swift in Sources */,
+				E8508ACA0A417772A370B6CC /* ReaderStore.swift in Sources */,
 				DAE53B64059D80FF5636ABAA /* ReadingEngine.swift in Sources */,
 				F0B3646EEA19651E8C458560 /* SettingsView.swift in Sources */,
 			);
@@ -215,6 +234,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				438F2E2FF7A2861780E4A615 /* ReaderFlowTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -51,7 +51,7 @@ private enum SurfaceGrain {
             }
             for y in stride(from: 0, to: 192, by: 3) {
                 context.setFillColor(UIColor(white: 0.75, alpha: 0.14).cgColor)
-                context.fill(CGRect(x: 0, y: y, width: 192, height: 0.5))
+                context.fill(CGRect(x: 0, y: CGFloat(y), width: 192, height: 0.5))
             }
         }
     }()

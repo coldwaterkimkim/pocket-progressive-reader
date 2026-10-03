@@ -41,7 +41,7 @@ enum ReadingEngine {
             let makeUnit: ([Atom]) -> ReadingUnit = { group in
                 let first = group.first!, last = group.last!
                 let span = NSRange(location: first.range.location, length: NSMaxRange(last.range) - first.range.location)
-                let displayed = group.map(\.text).joined(separator: " ")
+                let displayed = join(group[...])
                 return ReadingUnit(text: displayed, sentenceIndex: sentence, sourceRange: span, width: width(displayed, settings: settings))
             }
             let groups: [[Atom]]

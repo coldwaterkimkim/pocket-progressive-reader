@@ -63,7 +63,7 @@ struct ReaderSettings: Codable, Equatable {
     var presentation: PresentationMode = .past
     var segmentation: SegmentationMode = .balanced
     var panel: PanelPreset = .bar223
-    var fontSize: Double = 22
+    var fontSize: Double = 26
     var lineGap: Double = 6
     var padding: Double = 14
     var pastLines: Int = 3
