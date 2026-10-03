@@ -25,5 +25,14 @@
     "utility settings"
   ],
   "design_reference": "docs/design/approved-home.png",
-  "native_decision_date": "2026-10-03"
+  "native_decision_date": "2026-10-03",
+  "device_validation": {
+    "date": "2026-10-03",
+    "model": "iPhone 13 mini",
+    "configuration": "signed Release",
+    "installed": true,
+    "launched": true,
+    "running_process_confirmed": true,
+    "hands_on_checks": "pending"
+  }
 }

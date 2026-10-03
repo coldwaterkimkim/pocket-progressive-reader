@@ -7,8 +7,9 @@ This is a behavioral prototype, not evidence that fixed-focus reading improves c
 - Xcode 27.0, minimum deployment iOS 17.
 - Debug simulator build/install/launch succeeded.
 - Release generic iOS build without signing succeeded. This verifies device compilation, not installation.
-- Physical signing attempt failed: Xcode has no configured Apple account and no matching app development provisioning profile. An existing development certificate alone is insufficient.
-- Registered iPhone was unavailable; no installation or physical haptic/grip/calibration verification claimed.
+- Earlier signing attempt failed and the iPhone was unavailable. After connection, the correct development team from the certificate organization unit was supplied as a local build override.
+- Signed Release build succeeded for the connected iPhone 13 mini. System device tooling confirmed installation, successful launch and a running PocketReader process.
+- Physical haptics, grip, calibration and visible UI have not been independently verified; those need hands-on checking on the phone.
 
 ## Automated behavior
 

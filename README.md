@@ -41,7 +41,7 @@ Ten engine/store tests and seven UI flows passed across focused runs; unsigned R
 
 ## Physical iPhone installation
 
-The app is ready for local Xcode installation; the current Mac still needs an Apple account added under Xcode → Settings → Apple Accounts. Then select a Personal Team under Signing & Capabilities, connect/unlock/trust the iPhone, choose it as the destination and Run. No team ID or signing profile is committed. Device compilation passing does not mean the app has been installed.
+A signed Release build was installed and launched successfully on the connected iPhone 13 mini on 2026-10-03. For subsequent local installation, select your development team under Signing & Capabilities, connect/unlock/trust the iPhone, choose it as the destination and Run. No team ID or signing profile is committed. Hands-on haptic, grip and ruler calibration checks remain.
 
 ## Scope
 
