@@ -99,6 +99,7 @@ final class ReaderStoreTests: XCTestCase {
         store.settings.segmentation = .greedy
         store.rebuild()
         store.move(4)
+        store.save()
         let restored = ReaderStore(persistenceURL: url)
         XCTAssertEqual(restored.text, store.text)
         XCTAssertEqual(restored.settings, store.settings)
@@ -108,6 +109,34 @@ final class ReaderStoreTests: XCTestCase {
         let corrupt = ReaderStore(persistenceURL: url)
         XCTAssertNotNil(corrupt.persistenceError)
         XCTAssertFalse(corrupt.units.isEmpty)
+    }
+    func testExplicitSaveFlushesLatestPendingMovement() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("state.json")
+        let store = ReaderStore(persistenceURL: url)
+        store.save()
+        let initial = try Data(contentsOf: url)
+        store.move(3)
+        store.move(-1)
+        XCTAssertEqual(try Data(contentsOf: url), initial, "Detents do not synchronously rewrite the full document.")
+        store.save()
+        let restored = ReaderStore(persistenceURL: url)
+        XCTAssertEqual(restored.current, store.current)
+        XCTAssertEqual(restored.index, 2)
+        XCTAssertTrue(restored.visiblePast.allSatisfy { $0.sourceRange.location < restored.current!.sourceRange.location })
+    }
+    func testDelayedSavePersistsLatestMovement() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("state.json")
+        let store = ReaderStore(persistenceURL: url)
+        store.move(3)
+        store.move(-1)
+        try await Task.sleep(for: .milliseconds(600))
+        let restored = ReaderStore(persistenceURL: url)
+        XCTAssertEqual(restored.current, store.current)
+        XCTAssertEqual(restored.index, 2)
     }
     func testSampleModeNeverWritesPersistence() {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

@@ -51,7 +51,8 @@ struct ReaderDisplay: View {
     private var displayText: some View {
         let settings = store.settings
         let lineHeight = Double(ReadingEngine.font(settings).lineHeight)
-        let currentTop = (settings.panel.pixels.height - settings.padding - 8 - lineHeight) * scale
+        let verticalInset = min(settings.padding, max(0, settings.panel.pixels.height - 8 - lineHeight))
+        let currentTop = max(0, settings.panel.pixels.height - verticalInset - 8 - lineHeight) * scale
         return ZStack(alignment: .topLeading) {
             ForEach(Array(store.visiblePast.enumerated()), id: \.element.id) { offset, unit in
                 let distance = store.visiblePast.count - offset

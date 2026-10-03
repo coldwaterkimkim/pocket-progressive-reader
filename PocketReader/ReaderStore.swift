@@ -9,6 +9,7 @@ final class ReaderStore {
     private(set) var index = 0
     private(set) var persistenceError: String?
     @ObservationIgnored private let persistenceURL: URL?
+    @ObservationIgnored private var pendingSave: Task<Void, Never>?
 
     var current: ReadingUnit? { units.indices.contains(index) ? units[index] : nil }
     var progress: Double { units.isEmpty ? 0 : Double(index + 1) / Double(units.count) }
@@ -79,16 +80,30 @@ final class ReaderStore {
         // Saturating bounds avoid integer overflow for arbitrary navigation input.
         if delta > 0 { index += min(delta, units.count - 1 - index) }
         if delta < 0 { index += max(delta, -index) }
-        save()
+        scheduleSave()
     }
     func moveSentence(_ delta: Int) {
         guard let current, delta != 0 else { return }
         let target = current.sentenceIndex + (delta > 0 ? 1 : -1)
         guard let destination = units.firstIndex(where: { $0.sentenceIndex == target }) else { return }
         index = destination
-        save()
+        scheduleSave()
     }
+    private func scheduleSave() {
+        guard persistenceURL != nil else { return }
+        pendingSave?.cancel()
+        // Let a wheel gesture update the screen immediately; persist once it settles.
+        pendingSave = Task { @MainActor [weak self] in
+            do { try await Task.sleep(for: .milliseconds(250)) }
+            catch { return }
+            guard !Task.isCancelled else { return }
+            self?.save()
+        }
+    }
+    /// Flushes any pending navigation immediately, including on scene backgrounding.
     func save() {
+        pendingSave?.cancel()
+        pendingSave = nil
         guard let url = persistenceURL else { return }
         do {
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
