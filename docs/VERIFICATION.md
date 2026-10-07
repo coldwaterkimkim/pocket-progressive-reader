@@ -7,7 +7,7 @@ The earlier evidence below concerns the original 2026-10-03 build. Reading behav
 - `node tests/web-reader.test.mjs` passed: deterministic Canvas fixture across 108 geometry combinations, nonlinear font fallback, normalization, structure, history/regression, 200k-plus file ingestion and fixed editor CSS.
 - Live Chromium Canvas checks passed across 63 panel/algorithm/anchor combinations and 2,311 displayed units, with 0 measured first-eojeol center error and no horizontal overflow. A 250,000-character source left the editor at 180px. The only browser console error was the local server's missing favicon. Real browser checking complements, rather than replaces, fixture checks.
 - `revision-current-anchor.png` and `revision-past-anchor.png` are inspected native simulator screenshots of the final render path using temporary sample text. Original simulator saved state was restored afterward. `revision-web-current.png` and `revision-web-checks.json` retain live web evidence.
-- Signed Release compilation succeeded; the registered physical iPhone is currently unavailable. The revision has not been installed or checked hands-on on that phone. Earlier installation below is historical.
+- Signed Release compilation succeeded. On 2026-10-07 the revised build was installed and launched on the connected iPhone 13 mini; system device tooling confirmed its running process. Hands-on gaze, grip, haptics and calibration checks remain.
 
 Remaining experiment limits: very long unbroken eojeol become very small; Markdown is an MVP normalizer, not full CommonMark; practical memory/processing limits remain without an arbitrary app cap; fonts and optical characteristics differ from final TFT hardware; software tests do not demonstrate comprehension or attention gains.
 

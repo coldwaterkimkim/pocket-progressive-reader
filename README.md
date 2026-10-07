@@ -41,7 +41,7 @@ See verification for the latest test counts and what remains untested on physica
 
 ## Physical iPhone installation
 
-A signed Release build was installed and launched successfully on the connected iPhone 13 mini on 2026-10-03. For subsequent local installation, select your development team under Signing & Capabilities, connect/unlock/trust the iPhone, choose it as the destination and Run. No team ID or signing profile is committed. Hands-on haptic, grip and ruler calibration checks remain.
+The latest reading revision was built as signed Release, installed and launched successfully on the connected iPhone 13 mini on 2026-10-07. For subsequent local installation, select your development team under Signing & Capabilities, connect/unlock/trust the iPhone, choose it as the destination and Run. No team ID or signing profile is committed. Hands-on haptic, grip and ruler calibration checks remain.
 
 ## Scope
 

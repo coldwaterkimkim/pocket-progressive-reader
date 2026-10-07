@@ -27,14 +27,14 @@
   "design_reference": "docs/design/approved-home.png",
   "native_decision_date": "2026-10-03",
   "device_validation": {
-    "date": "2026-10-03",
+    "date": "2026-10-07",
     "model": "iPhone 13 mini",
     "configuration": "signed Release",
     "installed": true,
     "launched": true,
     "running_process_confirmed": true,
     "hands_on_checks": "pending",
-    "scope": "2026-10-03 build only; revised build device install pending"
+    "scope": "2026-10-07 reading revision"
   },
   "alignment_modes": [
     "Left aligned",
@@ -61,6 +61,6 @@
     "web_live_geometry_combinations": 63,
     "web_live_units_checked": 2311,
     "signed_release_build": "passed",
-    "physical_device_install": "pending connection"
+    "physical_device_install": "installed and launched on iPhone 13 mini, 2026-10-07"
   }
 }
