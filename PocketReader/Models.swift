@@ -69,7 +69,7 @@ enum WordFocusStyle: String, Codable, CaseIterable, Identifiable {
         case .color: return "글자 색상"
         case .underline: return "밑줄"
         case .dimOthers: return "다른 어절 흐리게"
-        case .highContrast: return "굵게 / 높은 대비"
+        case .highContrast: return "검은 배경"
         }
     }
 }

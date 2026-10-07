@@ -67,7 +67,7 @@ final class ReaderFlowTests: XCTestCase {
         let frame = current.frame
         let text = current.label
         rotateWheel(clockwise: true)
-        for title in ["노란 배경", "글자 색상", "밑줄", "다른 어절 흐리게", "굵게 / 높은 대비"] {
+        for title in ["노란 배경", "글자 색상", "밑줄", "다른 어절 흐리게", "검은 배경"] {
             openSettings()
             choose("settings.wordFocusStyle", title: title)
             XCTAssertFalse(element("settings.alignment").exists)
@@ -307,6 +307,7 @@ final class ReaderFlowTests: XCTestCase {
         replaceDraft(with: "# 제목\n\n첫 **강조** 문단.\n\n- 목록 항목\n\n> 인용 내용\n\n```swift\nlet value = 1\n```\n\n| 열 | 값 |\n| --- | --- |\n| A | B |\n\n" + String(repeating: "긴 본문 내용입니다. ", count: 20))
         app.buttons["settings.applyText"].tap()
         choose("settings.segmentation", title: "Full · 전체 본문")
+        choose("settings.wordFocusStyle", title: "검은 배경")
         closeSettings()
         let document = element("reader.document")
         XCTAssertTrue(document.waitForExistence(timeout: 8))
@@ -314,6 +315,7 @@ final class ReaderFlowTests: XCTestCase {
         XCTAssertFalse(current.label.contains("**"))
         XCTAssertFalse(current.label.contains("```"))
         XCTAssertTrue(app.staticTexts["제목"].waitForExistence(timeout: 5))
+        rotateWheel(clockwise: true)
         let initial = XCTAttachment(screenshot: app.screenshot())
         initial.name = "Full Markdown formatted document"
         initial.lifetime = .keepAlways
@@ -335,6 +337,10 @@ final class ReaderFlowTests: XCTestCase {
         XCTAssertTrue(app.buttons["home.settings"].isHittable)
         rotateWheel(clockwise: true)
         XCTAssertNotEqual(element("wheel").value as? String, "어절 포커스 없음")
+        let rail = XCTAttachment(screenshot: app.screenshot())
+        rail.name = "Horizontal rail stationary centered black focus"
+        rail.lifetime = .keepAlways
+        add(rail)
     }
 
     func testCounterclockwiseMovesUpWithinVisibleViewport() {

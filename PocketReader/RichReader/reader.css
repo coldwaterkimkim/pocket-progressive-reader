@@ -9,8 +9,12 @@ p{margin:.45em 0}h1,h2,h3,h4,h5,h6{line-height:1.25;margin:.5em 0}h1{font-size:1
 [data-focus-style=yellow] .focused{background:#f2d75f}
 [data-focus-style=color] .focused{color:#b33f24}
 [data-focus-style=underline] .focused{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
-[data-focus-style=highContrast] .focused{-webkit-text-stroke:.45px currentColor;text-shadow:0 0 .2px currentColor}
+[data-focus-style=highContrast] .focused{background:#000;color:#fff}
 [data-focus-style=dimOthers].has-focus [data-token]{opacity:.35}
 [data-focus-style=dimOthers].has-focus .focused{opacity:1}
 
 #reader-document.horizontal.plain{white-space:nowrap}
+
+/* End spacers let even the first/last token snap to the viewport center. */
+#reader-document.horizontal::before,#reader-document.horizontal::after{content:"";display:inline-block;width:50%;height:1px}
+#reader-document.horizontal.has-focus{overflow-x:hidden}

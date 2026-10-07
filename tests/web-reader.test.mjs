@@ -68,7 +68,7 @@ ui.presentation.value='current';api.reset();const normalY=api.focusY(),normalOri
 for(const style of ['yellow','color','underline','dim','bold'])for(let focused=0;focused<state.units[0].tokens.length;focused++){
   ui.focusStyle.value=style;state.focusedToken=focused;calls.length=0;decorations.length=0;api.drawPresentation();
   assert(calls.length>0);for(const [text,x,y]of calls){assert.equal(text,state.units[0].text);assert.equal(x,normalOrigin);assert.equal(y,normalY)}assert.equal(state.units[0].fontSize,normalFont);
-  if(style==='bold')assert(decorations.some(c=>c[0]==='stroke'));if(style==='yellow'||style==='underline')assert(decorations.some(c=>c[0]==='rect'));
+  if(style==='bold')assert(!decorations.some(c=>c[0]==='stroke'));if(style==='yellow'||style==='underline'||style==='bold')assert(decorations.some(c=>c[0]==='rect'));
 }
 // Whole-document modes do not scale, truncate, or segment the source.
 ui.source.value='첫 문장 전체.\n다음 문장 전체.\n\n세 번째 문단.';ui.algorithm.value='full';api.buildModel();assert.equal(state.units.length,1);assert.equal(state.units[0].text,state.document);assert(!state.units[0].scaled);assert.equal(state.units[0].tokens.length,9);api.focusMove(1);assert.equal(state.focusedToken,0);

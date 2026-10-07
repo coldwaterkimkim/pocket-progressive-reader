@@ -140,7 +140,7 @@ struct ReaderDisplay: View {
                     graphics.setFillColor(UIColor(red: 1, green: 0.84, blue: 0.2, alpha: 0.7).cgColor)
                     graphics.fill(rect)
                 } else if style == .highContrast {
-                    graphics.setFillColor(UIColor(white: 0.08, alpha: 1).cgColor)
+                    graphics.setFillColor(UIColor.black.cgColor)
                     graphics.fill(rect)
                 }
                 draw(style == .dimOthers ? UIColor(white: 0.12, alpha: 0.25) : ink)

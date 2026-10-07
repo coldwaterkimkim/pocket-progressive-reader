@@ -62,6 +62,12 @@
     const elements = tokens[index].elements;
     const first = elements[0], last = elements[elements.length-1]; if (!first) return;
     const bounds = root.getBoundingClientRect(), a = first.getBoundingClientRect(), b = last.getBoundingClientRect();
+    if (root.classList.contains('horizontal')) {
+      // Convert visual coordinates to scroll coordinates, including scaled hardware previews.
+      const scale = root.clientWidth / bounds.width;
+      root.scrollLeft += ((a.left + b.right) / 2 - (bounds.left + bounds.right) / 2) * scale;
+      return;
+    }
     if (a.top < bounds.top || b.bottom > bounds.bottom || a.left < bounds.left || b.right > bounds.right) {
       first.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
     }
