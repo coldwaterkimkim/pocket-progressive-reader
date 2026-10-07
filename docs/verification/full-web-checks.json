@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-07",
+  "engine": "live Chromium via Playwright",
+  "markdown": {
+    "heading": true,
+    "strong": true,
+    "list": true,
+    "blockquote": true,
+    "fencedCode": true,
+    "table": true,
+    "taskMarker": true,
+    "remoteImageEagerRequests": 0
+  },
+  "standaloneRenderer": {
+    "stableVisibleReverseFocus": true,
+    "coarseScrollToOutsideToken": true,
+    "coarseHighlightCleared": true,
+    "singleLine": true,
+    "horizontalOverflow": true,
+    "horizontalScroll": true
+  },
+  "hardwareLab": {
+    "panelPixels": [
+      480,
+      200
+    ],
+    "fullTokens": 113,
+    "fullVerticalOverflow": true,
+    "horizontalSingleLine": true,
+    "horizontalScroll": true,
+    "stableVisibleReverseFocus": true
+  },
+  "console": "Only missing localhost favicon 404"
+}

@@ -1,6 +1,8 @@
 # Pocket Progressive Reader / Attention-Scaffolded Reading
 ## Codex Handoff
 
+> **2026-10-07 whole-document update:** Full segmentation adds a naturally wrapped, scrollable whole document. Horizontal presentation shows the entire document on one long line. Sentence-bounded presentation is retired, past rows have equal contrast, and CCW moves within the existing viewport until crossing its top. Full/horizontal render GFM Markdown; progressive chunks remain normalized plain text. `docs/FULL_DOCUMENT_REVISION.md` is the latest specification. These decisions supersede the historical three-mode and all-bottom-fixed claims below.
+
 > **2026-10-07 manual word-focus update:** Owner hands-on feedback retires the fixed-gaze experiment completely. Reading is left-aligned. Buttons navigate reveals/sentences and clear fine focus; the rotary wheel implicitly activates a transient eojeol/word cursor and traverses continuously across reveals. Five stationary highlight styles are available. Current Only remains centered and Typewriter remains bottom-fixed. TXT/MD and hardware comparison are preserved. `docs/WORD_FOCUS_REVISION.md` is the latest reading specification.
 
 > **2026-10-07 reading revision:** Current Only is now vertically centered; both Typewriter modes retain the bottom focus. Left / first-eojeol ink-center gaze alignment (33%, adjustable 20–50%) is available. TXT/Markdown normalization, compact source editing and atomic eojeol width-balanced chunking are implemented in the native app and v4 lab. Long indivisible eojeol use an explicit font-reduction exception. Historical all-bottom-fixed and token-splitting decisions below are superseded; see `docs/READING_REVISION.md`.

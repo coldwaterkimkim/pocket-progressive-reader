@@ -1,3 +1,18 @@
+# Whole-document and viewport verification — 2026-10-07
+
+Current behavior is defined by FULL_DOCUMENT_REVISION.md; older evidence below is historical.
+
+- 30 native engine/store/source tests passed, with the final changed coarse-navigation test rerun successfully. Coverage adds whole-document construction, retired sentence-mode migration and stationary visible-window CCW regression.
+- Four distinct relevant UI tests passed across focused runs: Full Markdown / horizontal views, CCW within visible rows, Current Only / past positioning, and five highlight styles with stable line geometry. This is not a new complete UI-suite run.
+- The first run passed 32 checks (30 logic + two UI). The final follow-up passed four checks (one changed logic + three UI). Result bundles: `test_sim_2026-10-07T14-15-32-884Z_pid93255_ab67d23d.xcresult` and `test_sim_2026-10-07T14-18-04-731Z_pid93255_f1ff3216.xcresult` in the local XcodeBuildMCP directory.
+- The native UI test confirms actual WK document title text, takes formatted and scrolled screenshots, uses a sentence button, vertically scrolls, switches to horizontal, swipes, and activates fine focus. Exported screenshots `full-native-markdown.png` and `full-native-scroll.png` were visually inspected.
+- Web fixture tests pass. Live Chromium verifies Markdown heading/emphasis/list/quote/code/table/task structure, no eager external-image load, token enumeration, vertical overflow, one unwrapped horizontal line, coarse target scrolling, highlight clearing, and stationary reverse focus within the current viewport. The hardware lab confirms a 480×200 document surface, 113 tokens, overflow and stable reverse focus. Record: `full-web-checks.json`. Only the localhost favicon returned 404.
+- Final signed Release build succeeded. Installed and launched on the connected iPhone 13 mini; device process inspection confirmed PocketReader running. The temporary browser and local server were stopped.
+
+Limits: Full/horizontal render GFM Markdown; progressive chunks remain normalized plain text. No math/Mermaid engine. Remote images need an explicit tap; image download failure paths and external link destinations were not exercised. Simulator/browser checks do not demonstrate physical encoder feel, readability benefit or comprehension gains. Historical practical memory/font-shrink limits remain.
+
+---
+
 # Current manual word-focus verification — 2026-10-07
 
 Current reading behavior is defined by WORD_FOCUS_REVISION.md. The earlier gaze evidence below is historical; gaze UI/state/geometry has been removed from product code.

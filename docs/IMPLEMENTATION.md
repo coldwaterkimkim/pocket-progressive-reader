@@ -1,3 +1,5 @@
+> Latest whole-document, Markdown and viewport decisions supersede historical presentation details below. See [FULL_DOCUMENT_REVISION.md](FULL_DOCUMENT_REVISION.md).
+
 # Native prototype decisions — 2026-10-03
 
 > Reading behavior was revised on 2026-10-07. `READING_REVISION.md` supersedes all-bottom Current Only and long-token splitting below. This document retains the original implementation decisions for context.
