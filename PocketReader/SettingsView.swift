@@ -79,19 +79,12 @@ struct SettingsView: View {
                     .accessibilityIdentifier("settings.segmentation")
                 }
 
-                Section("시선") {
-                    Picker("정렬", selection: $store.settings.alignment) {
-                        ForEach(AlignmentMode.allCases) { mode in Text(mode.title).tag(mode) }
+                Section("WORD FOCUS") {
+                    Picker("강조 스타일", selection: $store.settings.wordFocusStyle) {
+                        ForEach(WordFocusStyle.allCases) { style in Text(style.title).tag(style) }
                     }
-                    .accessibilityIdentifier("settings.alignment")
-                    VStack(alignment: .leading) {
-                        Text("앵커 X · \(Int((store.settings.anchorFraction * 100).rounded()))%")
-                        Slider(value: $store.settings.anchorFraction, in: 0.2...0.5, step: 0.01)
-                            .accessibilityIdentifier("settings.anchorX")
-                            .accessibilityLabel("앵커 X")
-                    }
-                    .disabled(store.settings.alignment == .left)
-                    Text("첫 어절의 시각적 중심을 고정해. 어절 하나가 공간보다 길면 그 조각의 글자만 줄여 모두 표시해.")
+                    .accessibilityIdentifier("settings.wordFocusStyle")
+                    Text("휠을 돌리면 어절 포커스가 시작돼. 방향 버튼은 조각·문장을 이동하고 포커스를 해제해.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
 

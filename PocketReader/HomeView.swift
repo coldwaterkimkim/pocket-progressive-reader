@@ -54,8 +54,7 @@ struct HomeView: View {
         .sheet(item: $sheet) { _ in SettingsView(store: store) }
         .onChange(of: store.settings) { old, new in
             if old.segmentation != new.segmentation || old.panel != new.panel || old.fontSize != new.fontSize
-                || old.padding != new.padding || old.alignment != new.alignment
-                || (new.alignment == .gazeAnchor && old.anchorFraction != new.anchorFraction) {
+                || old.padding != new.padding {
                 store.rebuild()
             } else { store.save() }
         }

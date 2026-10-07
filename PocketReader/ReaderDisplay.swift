@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import CoreText
 
 struct ReaderDisplay: View {
     let store: ReaderStore
@@ -56,14 +57,14 @@ struct ReaderDisplay: View {
             ForEach(Array(store.visiblePast.enumerated()), id: \.element.id) { offset, unit in
                 let distance = store.visiblePast.count - offset
                 let alpha = [0.48, 0.28, 0.16, 0.10, 0.08, 0.06][min(distance - 1, 5)]
-                line(unit)
-                    .foregroundStyle(ReaderPalette.ink.opacity(alpha))
+                renderedLine(unit, alpha: alpha, focused: nil)
                     .offset(x: lineX(unit), y: currentTop - Double(distance) * (lineHeight + settings.lineGap))
                     .accessibilityHidden(true)
             }
-            line(store.current)
-                .foregroundStyle(ReaderPalette.ink)
+            renderedLine(store.current, alpha: 1, focused: store.focusedToken)
                 .offset(x: store.current.map(lineX) ?? settings.padding, y: currentTop)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(store.current?.text ?? "설정에서 읽을 글을 넣어줘")
                 .accessibilityIdentifier("reader.current")
                 .accessibilityValue("\(store.index + (store.units.isEmpty ? 0 : 1)) / \(store.units.count)")
         }
@@ -75,14 +76,57 @@ struct ReaderDisplay: View {
     }
 
     private func lineX(_ unit: ReadingUnit) -> Double {
-        let placement = AnchorGeometry.placement(width: unit.width, firstWidth: unit.firstEojeolWidth, firstCenter: unit.firstEojeolCenter, inkLeft: unit.inkLeft, settings: store.settings)
-        return store.settings.padding + placement.origin
+        store.settings.padding + max(0, -unit.inkLeft)
     }
-    private func line(_ unit: ReadingUnit?) -> some View {
-        Text(unit?.text ?? "설정에서 읽을 글을 넣어줘")
-            .font(.system(size: store.settings.fontSize * (unit?.fontScale ?? 1)))
-            .lineLimit(1)
-            .fixedSize(horizontal: true, vertical: false)
-            .frame(height: Double(ReadingEngine.font(store.settings).lineHeight))
+
+    private func renderedLine(_ unit: ReadingUnit?, alpha: Double, focused: ReadingToken?) -> some View {
+        let font = UIFont.systemFont(ofSize: store.settings.fontSize * (unit?.fontScale ?? 1))
+        let lineHeight = Double(ReadingEngine.font(store.settings).lineHeight)
+        let text = unit?.text ?? "설정에서 읽을 글을 넣어줘"
+        return Canvas { context, _ in
+            context.withCGContext { graphics in
+                let attributed = NSAttributedString(string: text, attributes: [
+                    .font: font,
+                    NSAttributedString.Key(kCTForegroundColorFromContextAttributeName as String): true
+                ])
+                let line = CTLineCreateWithAttributedString(attributed)
+                let baseline = font.ascender + (lineHeight - font.lineHeight) / 2
+                func draw(_ color: UIColor) {
+                    graphics.saveGState()
+                    graphics.translateBy(x: 0, y: baseline)
+                    graphics.scaleBy(x: 1, y: -1)
+                    graphics.textMatrix = .identity
+                    graphics.textPosition = .zero
+                    graphics.setFillColor(color.cgColor)
+                    CTLineDraw(line, graphics)
+                    graphics.restoreGState()
+                }
+                let ink = UIColor(white: 0.12, alpha: alpha)
+                guard let focused else { draw(ink); return }
+                let rect = CGRect(x: focused.x, y: 0, width: focused.width, height: lineHeight)
+                let style = store.settings.wordFocusStyle
+                if style == .yellow {
+                    graphics.setFillColor(UIColor(red: 1, green: 0.84, blue: 0.2, alpha: 0.7).cgColor)
+                    graphics.fill(rect)
+                } else if style == .highContrast {
+                    graphics.setFillColor(UIColor(white: 0.08, alpha: 1).cgColor)
+                    graphics.fill(rect)
+                }
+                draw(style == .dimOthers ? UIColor(white: 0.12, alpha: 0.25) : ink)
+                if style == .underline {
+                    graphics.setFillColor(ink.cgColor)
+                    graphics.fill(CGRect(x: rect.minX, y: baseline + 2, width: rect.width, height: 1.5))
+                } else if style == .color || style == .dimOthers || style == .highContrast {
+                    graphics.saveGState()
+                    graphics.clip(to: rect)
+                    let focusInk = style == .color ? UIColor(red: 0.04, green: 0.28, blue: 0.65, alpha: 1)
+                        : (style == .highContrast ? UIColor.white : ink)
+                    // Redraw the same shaped line through a token clip. Font metrics and glyph positions never change.
+                    draw(focusInk)
+                    graphics.restoreGState()
+                }
+            }
+        }
+        .frame(width: max(1, unit?.width ?? store.settings.panel.pixels.width - 2 * store.settings.padding), height: lineHeight)
     }
 }

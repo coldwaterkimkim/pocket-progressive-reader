@@ -29,7 +29,7 @@ enum ReadingEngine {
         }
         return spans
     }
-    private struct Atom { let text: String; let range: NSRange; let width: Double; let center: Double; let inkLeft: Double }
+    private struct Atom { let text: String; let range: NSRange; let width: Double; let inkLeft: Double }
     static func build(text: String, settings: ReaderSettings) -> [ReadingUnit] {
         build(document: SourceDocument(source: text, format: .plain), settings: settings)
     }
@@ -42,7 +42,7 @@ enum ReadingEngine {
             let atoms = regex.matches(in: document.normalizedText, range: sentence.range).map { match -> Atom in
                 let text = source.substring(with: match.range)
                 let metrics = NativeTextMetrics.measure(text, font: nativeFont)
-                return Atom(text: text, range: match.range, width: metrics.width, center: metrics.inkCenter, inkLeft: metrics.inkLeft)
+                return Atom(text: text, range: match.range, width: metrics.width, inkLeft: metrics.inkLeft)
             }
             let groups: [[Atom]]
             switch settings.segmentation {
@@ -57,10 +57,18 @@ enum ReadingEngine {
                 // Measure with the exact font ultimately used for rendering, including fallback shrink.
                 let renderedFont = UIFont.systemFont(ofSize: settings.fontSize * scale)
                 let metrics = NativeTextMetrics.measure(text, font: renderedFont)
-                let firstMetrics = NativeTextMetrics.measure(first.text, font: renderedFont)
+                var offset = 0
+                let displayRanges = group.map { atom -> NSRange in
+                    defer { offset += atom.text.utf16.count + 1 }
+                    return NSRange(location: offset, length: atom.text.utf16.count)
+                }
+                let positions = NativeTextMetrics.tokenPositions(text: text, ranges: displayRanges, font: renderedFont)
+                let tokens = group.indices.map { i in
+                    ReadingToken(text: group[i].text, sourceRange: group[i].range, displayRange: displayRanges[i], x: positions[i].x, width: positions[i].width)
+                }
                 result.append(ReadingUnit(text: text, sentenceIndex: sentenceIndex,
                     sourceRange: NSRange(location: first.range.location, length: NSMaxRange(last.range) - first.range.location),
-                    width: metrics.width, firstEojeolWidth: firstMetrics.width, firstEojeolCenter: firstMetrics.inkCenter, inkLeft: metrics.inkLeft, fontScale: scale))
+                    width: metrics.width, tokens: tokens, inkLeft: metrics.inkLeft, fontScale: scale))
             }
         }
         return result
@@ -73,8 +81,7 @@ enum ReadingEngine {
         for _ in 0..<32 {
             let scale = (low + high) / 2
             let m = NativeTextMetrics.measure(atom.text, font: UIFont.systemFont(ofSize: settings.fontSize * scale))
-            let placed = AnchorGeometry.placement(width: m.width, firstWidth: m.width, firstCenter: m.inkCenter, inkLeft: m.inkLeft, settings: settings)
-            if placed.left >= 0 && placed.right <= usableWidth(settings) { low = scale }
+            if m.width + max(0, -m.inkLeft) <= usableWidth(settings) { low = scale }
             else { high = scale }
         }
         return low
@@ -82,7 +89,7 @@ enum ReadingEngine {
     private static func join(_ atoms: ArraySlice<Atom>) -> String { atoms.map(\.text).joined(separator: " ") }
     private static func measured(_ text: String, font: UIFont) -> Double { NativeTextMetrics.measure(text, font: font).width }
     private static func fits(width: Double, first: Atom, settings: ReaderSettings) -> Bool {
-        AnchorGeometry.placement(width: width, firstWidth: first.width, firstCenter: first.center, inkLeft: first.inkLeft, settings: settings).fits(in: usableWidth(settings))
+        width + max(0, -first.inkLeft) <= usableWidth(settings) + 0.001
     }
     private static func greedy(_ atoms: [Atom], settings: ReaderSettings, font: UIFont) -> [[Atom]] {
         var groups: [[Atom]] = [], start = 0, candidate = ""
@@ -121,8 +128,7 @@ enum ReadingEngine {
         let n = atoms.count
         let full = measured(join(atoms[...]), font: font)
         if fits(width: full, first: atoms[0], settings: settings) { return [atoms] }
-        let averageFirst = atoms.reduce(0) { $0 + min($1.width, usableWidth(settings)) } / Double(n)
-        let lane = min(usableWidth(settings), AnchorGeometry.maximumUnitWidth(firstWidth: averageFirst, settings: settings))
+        let lane = usableWidth(settings)
         let ideal = min(lane * 0.88, full / max(2, ceil(full / lane)))
         var costs = Array(repeating: Double.infinity, count: n + 1), ends = Array(repeating: 0, count: n)
         costs[n] = 0

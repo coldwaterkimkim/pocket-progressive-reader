@@ -57,7 +57,7 @@ struct ClickWheel: View {
                         let detent = Double.pi / 12
                         while abs(accumulated) >= detent {
                             let direction = accumulated > 0 ? 1 : -1
-                            perform { store.move(direction) }
+                            perform { store.moveFocus(direction) }
                             accumulated -= Double(direction) * detent
                         }
                     }
@@ -72,10 +72,11 @@ struct ClickWheel: View {
             .accessibilityElement(children: .contain)
             .accessibilityLabel("방향 클릭휠")
             .accessibilityIdentifier("wheel")
+            .accessibilityValue(store.focusedToken?.text ?? "어절 포커스 없음")
             .accessibilityAdjustableAction { direction in
                 switch direction {
-                case .increment: perform { store.move(1) }
-                case .decrement: perform { store.move(-1) }
+                case .increment: perform { store.moveFocus(1) }
+                case .decrement: perform { store.moveFocus(-1) }
                 @unknown default: break
                 }
             }
@@ -103,9 +104,9 @@ struct ClickWheel: View {
     }
 
     private func perform(_ action: () -> Void) {
-        let before = store.index
+        let before = (store.index, store.focusedTokenIndex)
         action()
-        if before != store.index && store.settings.haptics {
+        if (before.0 != store.index || before.1 != store.focusedTokenIndex) && store.settings.haptics {
             UISelectionFeedbackGenerator().selectionChanged()
         }
     }

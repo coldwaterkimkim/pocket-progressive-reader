@@ -59,17 +59,24 @@ enum PanelPreset: String, Codable, CaseIterable, Identifiable {
     }
 }
 
-enum AlignmentMode: String, Codable, CaseIterable, Identifiable {
-    case left, gazeAnchor
+enum WordFocusStyle: String, Codable, CaseIterable, Identifiable {
+    case yellow, color, underline, dimOthers, highContrast
     var id: String { rawValue }
-    var title: String { self == .left ? "왼쪽 정렬" : "고정 시선 앵커" }
+    var title: String {
+        switch self {
+        case .yellow: return "노란 배경"
+        case .color: return "글자 색상"
+        case .underline: return "밑줄"
+        case .dimOthers: return "다른 어절 흐리게"
+        case .highContrast: return "굵게 / 높은 대비"
+        }
+    }
 }
 
 struct ReaderSettings: Codable, Equatable {
     var presentation: PresentationMode = .past
     var segmentation: SegmentationMode = .balanced
-    var alignment: AlignmentMode = .left
-    var anchorFraction: Double = 0.33
+    var wordFocusStyle: WordFocusStyle = .yellow
     var panel: PanelPreset = .bar223
     var fontSize: Double = 26
     var lineGap: Double = 6
@@ -84,15 +91,14 @@ struct ReaderSettings: Codable, Equatable {
 
 extension ReaderSettings {
     private enum CodingKeys: String, CodingKey {
-        case presentation, segmentation, alignment, anchorFraction, panel, fontSize, lineGap, padding, pastLines, actualSize, pointsPerMM, showProgress, haptics
+        case presentation, segmentation, wordFocusStyle, panel, fontSize, lineGap, padding, pastLines, actualSize, pointsPerMM, showProgress, haptics
     }
     init(from decoder: Decoder) throws {
         self.init()
         let c = try decoder.container(keyedBy: CodingKeys.self)
         presentation = try c.decodeIfPresent(PresentationMode.self, forKey: .presentation) ?? presentation
         segmentation = try c.decodeIfPresent(SegmentationMode.self, forKey: .segmentation) ?? segmentation
-        alignment = try c.decodeIfPresent(AlignmentMode.self, forKey: .alignment) ?? alignment
-        anchorFraction = try c.decodeIfPresent(Double.self, forKey: .anchorFraction) ?? anchorFraction
+        wordFocusStyle = try c.decodeIfPresent(WordFocusStyle.self, forKey: .wordFocusStyle) ?? wordFocusStyle
         panel = try c.decodeIfPresent(PanelPreset.self, forKey: .panel) ?? panel
         fontSize = try c.decodeIfPresent(Double.self, forKey: .fontSize) ?? fontSize
         lineGap = try c.decodeIfPresent(Double.self, forKey: .lineGap) ?? lineGap
@@ -105,13 +111,20 @@ extension ReaderSettings {
     }
 }
 
+struct ReadingToken: Equatable {
+    let text: String
+    let sourceRange: NSRange
+    let displayRange: NSRange
+    let x: Double
+    let width: Double
+}
+
 struct ReadingUnit: Identifiable, Equatable {
     let text: String
     let sentenceIndex: Int
     let sourceRange: NSRange
     let width: Double
-    let firstEojeolWidth: Double
-    let firstEojeolCenter: Double
+    let tokens: [ReadingToken]
     let inkLeft: Double
     let fontScale: Double
     var id: Int { sourceRange.location }

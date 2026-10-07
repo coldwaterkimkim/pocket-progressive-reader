@@ -41,26 +41,39 @@ final class ReadingEngineTests: XCTestCase {
         let units = ReadingEngine.build(text: "  첫째\t내용.\n\n둘째   내용.  ", settings: ReaderSettings())
         XCTAssertEqual(compact(units.map(\.text).joined()), "첫째내용.둘째내용.")
     }
-    func testAnchorCenterAndBoundsAcrossPanelsModesAndAnchorRange() {
+    func testLeftAlignedTokensAndBoundsAcrossPanelsAndChunkers() {
         let text = "가나다라마바사아자차카타파하 아주 짧은 글, 그리고 다양한 어절의 길이를 비교한다. English extraordinarilylongword and 한글👨‍👩‍👧‍👦도 유지한다."
+        let document = SourceDocument(source: text, format: .plain)
         for panel in PanelPreset.allCases {
             for mode in SegmentationMode.allCases {
-                for anchor in [0.2, 0.33, 0.5] {
-                    for size in [10.0, 26.0, 34.0] {
-                        var settings = ReaderSettings()
-                        settings.panel = panel; settings.segmentation = mode
-                        settings.alignment = .gazeAnchor; settings.anchorFraction = anchor; settings.fontSize = size
-                        let units = ReadingEngine.build(text: text, settings: settings)
-                        XCTAssertEqual(compact(units.map(\.text).joined()), compact(text))
-                        for unit in units {
-                            let geometry = AnchorGeometry.placement(width: unit.width, firstWidth: unit.firstEojeolWidth, firstCenter: unit.firstEojeolCenter, inkLeft: unit.inkLeft, settings: settings)
-                            XCTAssertTrue(geometry.fits(in: ReadingEngine.usableWidth(settings)), "\(panel) \(mode) \(anchor): \(unit.text)")
-                            XCTAssertEqual(geometry.origin + unit.firstEojeolCenter, ReadingEngine.usableWidth(settings) * anchor, accuracy: 0.001)
-                            XCTAssertFalse(unit.text.contains("\n"))
+                for size in [10.0, 26.0, 34.0] {
+                    var settings = ReaderSettings()
+                    settings.panel = panel; settings.segmentation = mode; settings.fontSize = size
+                    let units = ReadingEngine.build(document: document, settings: settings)
+                    XCTAssertEqual(compact(units.map(\.text).joined()), compact(text))
+                    for unit in units {
+                        XCTAssertLessThanOrEqual(unit.width + max(0, -unit.inkLeft), ReadingEngine.usableWidth(settings) + 0.01)
+                        XCTAssertEqual(unit.tokens.map(\.text).joined(separator: " "), unit.text)
+                        var previousEnd = 0.0
+                        for token in unit.tokens {
+                            XCTAssertEqual((unit.text as NSString).substring(with: token.displayRange), token.text)
+                            XCTAssertEqual((document.normalizedText as NSString).substring(with: token.sourceRange), token.text)
+                            XCTAssertGreaterThanOrEqual(token.x, previousEnd - 0.01)
+                            XCTAssertGreaterThan(token.width, 0)
+                            XCTAssertLessThanOrEqual(token.x + token.width, unit.width + 0.01)
+                            previousEnd = token.x + token.width
                         }
                     }
                 }
             }
+        }
+    }
+    func testHighlightStyleDoesNotAffectChunkOrTokenGeometry() {
+        var settings = ReaderSettings()
+        let original = ReadingEngine.build(text: ReaderSample.text, settings: settings)
+        for style in WordFocusStyle.allCases {
+            settings.wordFocusStyle = style
+            XCTAssertEqual(ReadingEngine.build(text: ReaderSample.text, settings: settings), original)
         }
     }
     func testCurrentOnlyCenteredAndTypewriterBaselineStable() {
@@ -189,14 +202,21 @@ final class ReaderStoreTests: XCTestCase {
         original.move(2); original.save()
         var json = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [String: Any]
         var settings = json["settings"] as! [String: Any]
-        settings.removeValue(forKey: "alignment"); settings.removeValue(forKey: "anchorFraction")
+        // Retired settings from the previously installed build must be ignored, then dropped.
+        settings["alignment"] = "gazeAnchor"; settings["anchorFraction"] = 0.33
+        settings.removeValue(forKey: "wordFocusStyle")
         json["settings"] = settings; json.removeValue(forKey: "sourceFormat")
         try JSONSerialization.data(withJSONObject: json).write(to: url)
         let restored = ReaderStore(persistenceURL: url)
         XCTAssertNil(restored.persistenceError)
         XCTAssertEqual(restored.text, original.text)
         XCTAssertEqual(restored.current, original.current)
-        XCTAssertEqual(restored.settings.anchorFraction, 0.33)
+        XCTAssertEqual(restored.settings.wordFocusStyle, .yellow)
+        restored.save()
+        let saved = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [String: Any]
+        let savedSettings = saved["settings"] as! [String: Any]
+        XCTAssertNil(savedSettings["alignment"])
+        XCTAssertNil(savedSettings["anchorFraction"])
     }
     func testMarkdownSourceFormatAndNormalizedPositionPersist() throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -210,6 +230,70 @@ final class ReaderStoreTests: XCTestCase {
         XCTAssertEqual(restored.current, store.current)
         XCTAssertFalse(restored.units.map(\.text).joined().contains("https"))
         XCTAssertEqual(Set(restored.units.map(\.sentenceIndex)).count, 3)
+    }
+    func testFineTraversalActivatesThenCrossesBothWaysWithoutSkippingTokens() {
+        let store = ReaderStore(persistenceURL: nil)
+        store.settings.panel = .bar225; store.settings.fontSize = 34
+        store.updateText("나는 오늘 작은 리더기를 직접 만들어 보기로 했다. 다음 문장도 천천히 읽는다.")
+        XCTAssertNil(store.focusedTokenIndex)
+        let expected = store.units.flatMap(\.tokens).map(\.text)
+        var visited: [String] = []
+        for _ in expected.indices { store.moveFocus(1); visited.append(store.focusedToken!.text) }
+        XCTAssertEqual(visited, expected)
+        let lastIndex = store.index, lastFocus = store.focusedTokenIndex
+        store.moveFocus(1)
+        XCTAssertEqual(store.index, lastIndex); XCTAssertEqual(store.focusedTokenIndex, lastFocus)
+        for expectedWord in expected.dropLast().reversed() {
+            store.moveFocus(-1); XCTAssertEqual(store.focusedToken?.text, expectedWord)
+        }
+        XCTAssertEqual(store.index, 0); XCTAssertEqual(store.focusedTokenIndex, 0)
+        store.moveFocus(-1)
+        XCTAssertEqual(store.focusedTokenIndex, 0)
+        store.move(0); store.moveFocus(-1)
+        XCTAssertEqual(store.focusedTokenIndex, store.current!.tokens.count - 1)
+    }
+    func testEveryCoarseActionClearsFocusIncludingBoundaryNoOp() {
+        let store = ReaderStore(persistenceURL: nil)
+        store.updateText("처음 문장을 천천히 읽는다. 다음 문장을 읽는다.")
+        store.moveFocus(1); store.move(-1); XCTAssertNil(store.focusedTokenIndex)
+        store.moveFocus(1); store.moveSentence(-1); XCTAssertNil(store.focusedTokenIndex)
+        store.moveFocus(1); store.move(1); XCTAssertNil(store.focusedTokenIndex)
+        store.moveFocus(1); store.moveSentence(1); XCTAssertNil(store.focusedTokenIndex)
+        store.moveFocus(1); store.moveSentence(1); XCTAssertNil(store.focusedTokenIndex)
+        store.moveFocus(1); store.rebuild(); XCTAssertNil(store.focusedTokenIndex)
+        store.moveFocus(1); store.updateText(""); store.moveFocus(Int.max); XCTAssertNil(store.focusedTokenIndex)
+    }
+    func testFocusStaysTransientAndSurvivesHighlightStyleChanges() throws {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let store = ReaderStore(persistenceURL: url)
+        store.moveFocus(2)
+        let originalFocus = store.focusedTokenIndex
+        for style in WordFocusStyle.allCases {
+            store.settings.wordFocusStyle = style
+            XCTAssertEqual(store.focusedTokenIndex, originalFocus)
+        }
+        store.save()
+        let restored = ReaderStore(persistenceURL: url)
+        XCTAssertNil(restored.focusedTokenIndex)
+        XCTAssertEqual(restored.settings.wordFocusStyle, .highContrast)
+        store.moveFocus(Int.max)
+        XCTAssertEqual(store.index, store.units.count - 1)
+        store.moveFocus(Int.min)
+        XCTAssertEqual(store.index, 0); XCTAssertEqual(store.focusedTokenIndex, 0)
+    }
+    func testFineCrossSentenceUsesExistingSentenceBoundedHistory() {
+        let store = ReaderStore(persistenceURL: nil)
+        store.settings.presentation = .sentence
+        store.updateText("첫 문장을 천천히 읽는다. 둘째 문장도 천천히 읽는다.")
+        store.moveFocus(store.units.filter { $0.sentenceIndex == 0 }.flatMap(\.tokens).count)
+        store.moveFocus(1)
+        XCTAssertEqual(store.current?.sentenceIndex, 1)
+        XCTAssertEqual(store.focusedTokenIndex, 0)
+        XCTAssertTrue(store.visiblePast.isEmpty)
+        store.moveFocus(-1)
+        XCTAssertEqual(store.current?.sentenceIndex, 0)
+        XCTAssertEqual(store.focusedTokenIndex, store.current!.tokens.count - 1)
     }
     func testSampleModeNeverWritesPersistence() {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

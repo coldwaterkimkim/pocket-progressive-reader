@@ -30,22 +30,58 @@ final class ReaderFlowTests: XCTestCase {
         XCTAssertEqual(current.label, initialText)
     }
 
-    func testRingDragMovesInBothDirectionsWithoutMovingCurrentBaseline() {
+    func testRingActivatesWordFocusAndCoarseNavigationClearsIt() {
+        openSettings()
+        replaceDraft(with: "하나 둘 셋 넷 다섯. 다음 문장입니다.")
+        app.buttons["settings.applyText"].tap()
+        closeSettings()
         let wheel = element("wheel")
-        XCTAssertTrue(wheel.exists)
-        let baseline = current.frame.midY
-        let initial = position()
-        let top = wheel.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.12))
-        let right = wheel.coordinate(withNormalizedOffset: CGVector(dx: 0.88, dy: 0.5))
-        top.press(forDuration: 0.6, thenDragTo: right)
-        let advanced = position()
-        XCTAssertGreaterThan(advanced, initial)
-        XCTAssertLessThanOrEqual(advanced, total())
-        XCTAssertEqual(current.frame.midY, baseline, accuracy: 0.5)
-        right.press(forDuration: 0.6, thenDragTo: top)
-        XCTAssertLessThan(position(), advanced)
-        XCTAssertGreaterThanOrEqual(position(), 1)
-        XCTAssertEqual(current.frame.midY, baseline, accuracy: 0.5)
+        XCTAssertEqual(wheel.value as? String, "어절 포커스 없음")
+        let frame = current.frame
+        let initialText = current.label
+        rotateWheel(clockwise: true)
+        XCTAssertNotEqual(wheel.value as? String, "어절 포커스 없음")
+        XCTAssertEqual(current.label, initialText)
+        assertFrame(current.frame, equals: frame)
+        rotateWheel(clockwise: false)
+        XCTAssertNotEqual(wheel.value as? String, "어절 포커스 없음")
+        assertFrame(current.frame, equals: frame)
+        app.buttons["wheel.right"].tap()
+        XCTAssertEqual(wheel.value as? String, "어절 포커스 없음")
+        app.buttons["wheel.left"].tap()
+        XCTAssertEqual(current.label, initialText)
+        XCTAssertEqual(wheel.value as? String, "어절 포커스 없음")
+        rotateWheel(clockwise: true)
+        app.buttons["wheel.down"].tap()
+        XCTAssertEqual(wheel.value as? String, "어절 포커스 없음")
+        rotateWheel(clockwise: false)
+        app.buttons["wheel.up"].tap()
+        XCTAssertEqual(wheel.value as? String, "어절 포커스 없음")
+    }
+
+    func testAllWordFocusStylesPreserveLineLayout() {
+        openSettings()
+        replaceDraft(with: "하나 둘 셋 넷 다섯.")
+        app.buttons["settings.applyText"].tap()
+        closeSettings()
+        let frame = current.frame
+        let text = current.label
+        rotateWheel(clockwise: true)
+        for title in ["노란 배경", "글자 색상", "밑줄", "다른 어절 흐리게", "굵게 / 높은 대비"] {
+            openSettings()
+            choose("settings.wordFocusStyle", title: title)
+            XCTAssertFalse(element("settings.alignment").exists)
+            XCTAssertFalse(app.sliders["settings.anchorX"].exists)
+            closeSettings()
+            rotateWheel(clockwise: true)
+            XCTAssertNotEqual(element("wheel").value as? String, "어절 포커스 없음")
+            XCTAssertEqual(current.label, text)
+            assertFrame(current.frame, equals: frame)
+            let attachment = XCTAttachment(screenshot: app.screenshot())
+            attachment.name = "Word focus style: \(title)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
     }
 
     func testAllPresentationModesKeepCurrentAndHideFuture() {
@@ -243,33 +279,41 @@ final class ReaderFlowTests: XCTestCase {
         app.buttons["wheel.down"].tap()
         XCTAssertEqual(current.frame.midY, bottom, accuracy: 1)
     }
-    func testMarkdownPasteAndGazeAlignmentPreserveMinimalHome() {
+    func testMarkdownPastePreservesMinimalLeftAlignedHome() {
         openSettings()
         choose("settings.sourceFormat", title: "Markdown")
         replaceDraft(with: "## **짧게**\n\n### [조금더길게](https://example.com/a_(b))\n\n- 끝")
         let editor = app.textViews["settings.text"]
         XCTAssertLessThanOrEqual(editor.frame.height, 185)
         app.buttons["settings.applyText"].tap()
-        choose("settings.alignment", title: "고정 시선 앵커")
         choose("settings.presentation", title: "현재 조각만")
         closeSettings()
         XCTAssertEqual(current.label, "짧게")
         let screen = element("reader.display").frame
         XCTAssertTrue(screen.contains(current.frame))
-        let anchor = current.frame.midX
+        let left = current.frame.minX
         app.buttons["wheel.down"].tap()
         XCTAssertEqual(current.label, "조금더길게")
         XCTAssertTrue(screen.contains(current.frame))
-        XCTAssertEqual(current.frame.midX, anchor, accuracy: 1)
-        openSettings()
-        let slider = app.sliders["settings.anchorX"]
-        reveal(slider)
-        slider.adjust(toNormalizedSliderPosition: 1)
-        closeSettings()
-        XCTAssertGreaterThan(current.frame.midX, anchor + screen.width * 0.1)
-        XCTAssertTrue(screen.contains(current.frame))
+        XCTAssertEqual(current.frame.minX, left, accuracy: 1)
+        XCTAssertEqual(element("wheel").value as? String, "어절 포커스 없음")
         app.buttons["wheel.up"].tap()
         XCTAssertEqual(current.label, "짧게")
+    }
+
+    private func rotateWheel(clockwise: Bool) {
+        let wheel = element("wheel")
+        let top = wheel.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.12))
+        let right = wheel.coordinate(withNormalizedOffset: CGVector(dx: 0.88, dy: 0.5))
+        if clockwise { top.press(forDuration: 0.6, thenDragTo: right) }
+        else { right.press(forDuration: 0.6, thenDragTo: top) }
+    }
+
+    private func assertFrame(_ actual: CGRect, equals expected: CGRect) {
+        XCTAssertEqual(actual.minX, expected.minX, accuracy: 0.5)
+        XCTAssertEqual(actual.minY, expected.minY, accuracy: 0.5)
+        XCTAssertEqual(actual.width, expected.width, accuracy: 0.5)
+        XCTAssertEqual(actual.height, expected.height, accuracy: 0.5)
     }
 
     private func filesItemExists(_ labels: [String], timeout: TimeInterval) -> Bool {

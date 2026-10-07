@@ -9,6 +9,13 @@ final class ReaderStore {
     var settings: ReaderSettings
     private(set) var units: [ReadingUnit] = []
     private(set) var index = 0
+    private(set) var focusedTokenIndex: Int?
+    @ObservationIgnored private var tokenStarts: [Int] = []
+    @ObservationIgnored private var totalTokens = 0
+    var focusedToken: ReadingToken? {
+        guard let current, let focus = focusedTokenIndex, current.tokens.indices.contains(focus) else { return nil }
+        return current.tokens[focus]
+    }
     private(set) var persistenceError: String?
     @ObservationIgnored private let persistenceURL: URL?
     @ObservationIgnored private var pendingSave: Task<Void, Never>?
@@ -50,8 +57,7 @@ final class ReaderStore {
                       (0...18).contains(snapshot.settings.lineGap),
                       (2...30).contains(snapshot.settings.padding),
                       (0...6).contains(snapshot.settings.pastLines),
-                      (3...8).contains(snapshot.settings.pointsPerMM),
-                      (0.2...0.5).contains(snapshot.settings.anchorFraction) else {
+                      (3...8).contains(snapshot.settings.pointsPerMM) else {
                     throw CocoaError(.fileReadCorruptFile)
                 }
                 text = snapshot.text
@@ -63,6 +69,7 @@ final class ReaderStore {
         document = SourceDocument(source: text, format: sourceFormat)
         units = ReadingEngine.build(document: document, settings: settings)
         index = restoredIndex(offset)
+        reindexTokens()
     }
     private func restoredIndex(_ offset: Int) -> Int {
         guard !units.isEmpty else { return 0 }
@@ -70,20 +77,25 @@ final class ReaderStore {
         return units.lastIndex(where: { $0.sourceRange.location <= offset }) ?? 0
     }
     func rebuild() {
+        focusedTokenIndex = nil
         let offset = current?.sourceRange.location ?? 0
         units = ReadingEngine.build(document: document, settings: settings)
         index = restoredIndex(offset)
+        reindexTokens()
         save()
     }
     func updateText(_ text: String, format: SourceFormat = .plain) {
+        focusedTokenIndex = nil
         self.text = text
         sourceFormat = format
         document = SourceDocument(source: text, format: format)
         units = ReadingEngine.build(document: document, settings: settings)
         index = 0
+        reindexTokens()
         save()
     }
     func move(_ delta: Int) {
+        focusedTokenIndex = nil
         guard !units.isEmpty else { return }
         // Saturating bounds avoid integer overflow for arbitrary navigation input.
         if delta > 0 { index += min(delta, units.count - 1 - index) }
@@ -91,11 +103,43 @@ final class ReaderStore {
         scheduleSave()
     }
     func moveSentence(_ delta: Int) {
+        focusedTokenIndex = nil
         guard let current, delta != 0 else { return }
         let target = current.sentenceIndex + (delta > 0 ? 1 : -1)
         guard let destination = units.firstIndex(where: { $0.sentenceIndex == target }) else { return }
         index = destination
         scheduleSave()
+    }
+    private func reindexTokens() {
+        var offset = 0
+        tokenStarts = units.map { unit in
+            defer { offset += unit.tokens.count }
+            return offset
+        }
+        totalTokens = offset
+    }
+    /// Encoder steps only. First step activates this unit's first/last token; thereafter
+    /// steps walk the document's token sequence. Coarse navigation deliberately clears it.
+    func moveFocus(_ delta: Int) {
+        guard delta != 0, let current, !current.tokens.isEmpty, totalTokens > 0 else { return }
+        let base: Int, step: Int
+        if let focus = focusedTokenIndex {
+            base = tokenStarts[index] + focus; step = delta
+        } else {
+            base = tokenStarts[index] + (delta > 0 ? 0 : current.tokens.count - 1)
+            step = delta > 0 ? delta - 1 : delta + 1
+        }
+        let target = base + min(totalTokens - 1 - base, max(-base, step))
+        let previousIndex = index
+        var low = 0, high = units.count - 1
+        while low < high {
+            let mid = (low + high + 1) / 2
+            if tokenStarts[mid] <= target { low = mid } else { high = mid - 1 }
+        }
+        index = low
+        focusedTokenIndex = target - tokenStarts[index]
+        // Fine focus is transient; only crossing a reveal changes saved reading position.
+        if index != previousIndex { scheduleSave() }
     }
     private func scheduleSave() {
         guard persistenceURL != nil else { return }
