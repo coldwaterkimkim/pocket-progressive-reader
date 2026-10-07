@@ -17,7 +17,7 @@
     "connectivity_mvp": "USB-C required",
     "wireless": "later / optional"
   },
-  "next_preferred_step": "hands-on comparison of centered current, bottom history, left alignment and gaze anchor before hardware purchase",
+  "next_preferred_step": "hands-on comparison of optional fine word focus and highlight styles before hardware purchase",
   "native_app": "PocketReader/",
   "desktop_reference": "pocket_progressive_reader_hardware_lab_v4.html",
   "presentation_structure": [
@@ -34,18 +34,7 @@
     "launched": true,
     "running_process_confirmed": true,
     "hands_on_checks": "pending",
-    "scope": "2026-10-07 reading revision"
-  },
-  "alignment_modes": [
-    "Left aligned",
-    "Fixed gaze anchor: first eojeol ink center"
-  ],
-  "gaze_anchor": {
-    "default_usable_width_fraction": 0.33,
-    "range": [
-      0.2,
-      0.5
-    ]
+    "scope": "manual word-focus revision"
   },
   "input_formats": [
     "paste plain/Markdown",
@@ -54,13 +43,30 @@
   ],
   "reading_revision_date": "2026-10-07",
   "revision_validation": {
-    "date": "2026-10-07",
-    "unit_tests_passed": 23,
-    "distinct_ui_flows_passed": 10,
-    "test_scope": "focused simulator runs; final render checked",
-    "web_live_geometry_combinations": 63,
-    "web_live_units_checked": 2311,
+    "scope": "manual word-focus revision",
+    "unit_tests_passed": 28,
+    "web_live_focus_tokens_checked": 12,
+    "web_live_styles_checked": 5,
     "signed_release_build": "passed",
-    "physical_device_install": "installed and launched on iPhone 13 mini, 2026-10-07"
+    "ui_checks": "11 passed, xcresult verified after MCP timeout",
+    "physical_device_install": "installed and launched on iPhone 13 mini; running process confirmed"
+  },
+  "horizontal_alignment": "normal left alignment",
+  "word_focus": {
+    "activation": "implicit on rotary wheel",
+    "persisted": false,
+    "default": "inactive",
+    "forward_activation": "first eojeol",
+    "backward_activation": "last eojeol",
+    "step": "one eojeol per detent, continuous across reveals",
+    "coarse_navigation": "clears focus",
+    "styles": [
+      "yellow background",
+      "text color",
+      "underline",
+      "dim others",
+      "bold / high contrast"
+    ],
+    "automatic_progression": false
   }
 }

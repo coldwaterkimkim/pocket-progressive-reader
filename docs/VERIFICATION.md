@@ -1,3 +1,21 @@
+# Current manual word-focus verification — 2026-10-07
+
+Current reading behavior is defined by WORD_FOCUS_REVISION.md. The earlier gaze evidence below is historical; gaze UI/state/geometry has been removed from product code.
+
+- 28 native engine/store/normalization tests passed. Tests verify original-token UTF-16 ranges and measured positions, normal-left lane fit over 54 panel/chunker/font combinations, five-style geometry invariance, first/last implicit activation, complete forward/backward traversal, bounds including extreme deltas, coarse no-op focus clearing, sentence-history reset, transient focus, old JSON migration, TXT/MD normalization and large input.
+- All 11 native UI tests passed, with zero failures and zero runtime warnings in the xcresult summary. The MCP call itself timed out after 300 seconds; the underlying Xcode run completed successfully at approximately 319 seconds. Actual result bundle and log were inspected rather than inferring success from that timeout.
+- UI checks cover ring activation/regression/coarse reset, all five styles with constant current-line frame, no retired settings, presentation positions, manual reveal/sentence navigation, draft apply/discard, real TXT/MD Files imports, font reflow and progress/panel behavior.
+- Exported native style screenshots are `word-focus-native-{yellow,color,underline,dim,contrast}.png`. Each was visually inspected: the whole current line remains readable and stationary, with only the selected token's appearance changed.
+- Web fixture checks passed (`node tests/web-reader.test.mjs`): structured original tokens, 18 panel/chunker combinations, fine traversal, no future, reset, all five styles, source normalization and large import.
+- Live Chromium exercised 12 eojeol across reveal/sentence boundaries in both directions, reverse initial activation, document start, coarse reset, center reservation and five stationary drawing styles; no failures. All five actual Canvas style screenshots were inspected. Evidence is in `word-focus-web-checks.json` and `word-focus-web-*.png`.
+- Signed Release build succeeded, and the revised app was installed and launched on the connected iPhone 13 mini. Device tooling confirmed its running process. No real reading-session benefit or final hardware equivalence is claimed.
+
+Native unit result: `test_sim_2026-10-07T10-08-15-344Z_pid93255_117b2e4f.xcresult`. UI result: `test_sim_2026-10-07T10-08-53-856Z_pid93255_310e800a.xcresult` (local XcodeBuildMCP result-bundles directory).
+
+Next experiments: compare coarse reading without the ring against occasional fine assistance; compare highlight styles for comfort. Actual TFT contrast and encoder feel differ from iPhone. The previous very-long-eojeol font shrink and practical memory/normalization limitations remain.
+
+---
+
 # Latest revision verification — 2026-10-07
 
 The earlier evidence below concerns the original 2026-10-03 build. Reading behavior is now defined in `READING_REVISION.md`.

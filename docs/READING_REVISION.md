@@ -1,5 +1,7 @@
 # Reading experiment revision — 2026-10-07
 
+> Historical gaze experiment. Owner hands-on feedback retired gaze alignment later on 2026-10-07; WORD_FOCUS_REVISION.md is current. Normalization and presentation changes here remain, while anchor-specific geometry and UI have been removed.
+
 Current owner instructions supersede the historical all-bottom-fixed / long-token-splitting decisions. The native app remains the primary phone prototype; the standalone v4 hardware lab implements the same experiment and retains its original hardware comparison controls. The ChatGPT userscript remains an unchanged historical baseline.
 
 ## Visible behavior

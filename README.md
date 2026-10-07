@@ -17,9 +17,9 @@ No backend, account, analytics, remote API, or external runtime dependency.
 
 ## Reading
 
-Open the app and read immediately. Tap the wheel left/right for chunks, up/down for adjacent sentence starts, or drag clockwise/counterclockwise on the ring to scrub at 15° detents. The center is intentionally inert. The gear opens a plain utility settings sheet.
+Open the app and read immediately. Tap the wheel left/right for chunks, up/down for adjacent sentence starts, or drag clockwise/counterclockwise on the ring to focus one eojeol/word per 15° detent. The first ring movement activates fine focus; it traverses continuously across reveals. Direction buttons clear it. The center is intentionally inert. The gear opens a plain utility settings sheet.
 
-Settings accept pasted plain text/Markdown or TXT/MD files through a fixed-height source editor, three display modes and three segmentation modes, six panel references, font/spacing/history adjustments and optional progress/haptics. Text draft changes require Apply. Current Only is vertically centered; both Typewriter modes keep the current line near the bottom. Choose left alignment or a fixed first-eojeol ink-center anchor (20–50%, default 33%). Reading position and settings persist locally. Reading keeps the screen awake; opening settings or leaving the app restores normal idle behavior.
+Settings accept pasted plain text/Markdown or TXT/MD files through a fixed-height source editor, three display modes and three segmentation modes, six panel references, font/spacing/history adjustments and optional progress/haptics. Text draft changes require Apply. Current Only is vertically centered; both Typewriter modes keep the current line near the bottom. Reveals are left-aligned. Word Focus Settings compare yellow background, text color, underline, dim others and high contrast without moving text. There is no activation toggle or timed progression. Reading position and settings persist locally. Reading keeps the screen awake; opening settings or leaving the app restores normal idle behavior.
 
 The default is a fit preview. Enable actual-size mode and match its 50mm ruler with a physical ruler to approximate panel dimensions. A panel too wide for the phone is explicitly marked as scaled. No eye tracking or comprehension claims are implied.
 
@@ -33,15 +33,15 @@ xcodebuild -project PocketReader.xcodeproj -scheme PocketReader \
   -parallel-testing-enabled NO test
 ```
 
-See the [latest reading revision](docs/READING_REVISION.md), [implementation decisions](docs/IMPLEMENTATION.md) and [verification](docs/VERIFICATION.md). Tests use an isolated sample and temporary storage, never real reading data.
+See the [latest word-focus revision](docs/WORD_FOCUS_REVISION.md), [implementation decisions](docs/IMPLEMENTATION.md) and [verification](docs/VERIFICATION.md). Tests use an isolated sample and temporary storage, never real reading data.
 
-![Revised Current Only with gaze anchor — actual simulator](docs/verification/revision-current-anchor.png)
+![Manual word focus — actual simulator](docs/verification/word-focus-native-yellow.png)
 
 See verification for the latest test counts and what remains untested on physical hardware. The standalone v4 lab also supports the revised reading experiment; run its engine checks with `node tests/web-reader.test.mjs`.
 
 ## Physical iPhone installation
 
-The latest reading revision was built as signed Release, installed and launched successfully on the connected iPhone 13 mini on 2026-10-07. For subsequent local installation, select your development team under Signing & Capabilities, connect/unlock/trust the iPhone, choose it as the destination and Run. No team ID or signing profile is committed. Hands-on haptic, grip and ruler calibration checks remain.
+The manual word-focus revision was built as signed Release, installed and launched successfully on the connected iPhone 13 mini on 2026-10-07. For subsequent local installation, select your development team under Signing & Capabilities, connect/unlock/trust the iPhone, choose it as the destination and Run. No team ID or signing profile is committed. Hands-on haptic, grip and ruler calibration checks remain.
 
 ## Scope
 
