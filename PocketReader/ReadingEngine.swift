@@ -34,6 +34,9 @@ enum ReadingEngine {
         build(document: SourceDocument(source: text, format: .plain), settings: settings)
     }
     static func build(document: SourceDocument, settings: ReaderSettings) -> [ReadingUnit] {
+        if settings.segmentation == .full || settings.presentation == .horizontal {
+            return wholeDocument(document)
+        }
         let source = document.normalizedText as NSString
         let regex = try! NSRegularExpression(pattern: "\\S+")
         let nativeFont = font(settings)
@@ -47,6 +50,7 @@ enum ReadingEngine {
             let groups: [[Atom]]
             switch settings.segmentation {
             case .balanced: groups = balanced(atoms, settings: settings, font: nativeFont)
+            case .full: groups = [atoms]
             case .greedy: groups = greedy(atoms, settings: settings, font: nativeFont)
             case .eojeol: groups = eojeol(atoms).flatMap { greedy($0, settings: settings, font: nativeFont) }
             }
@@ -72,6 +76,16 @@ enum ReadingEngine {
             }
         }
         return result
+    }
+    private static func wholeDocument(_ document: SourceDocument) -> [ReadingUnit] {
+        let ns = document.normalizedText as NSString
+        let regex = try! NSRegularExpression(pattern: "\\S+")
+        let tokens = regex.matches(in: document.normalizedText, range: NSRange(location: 0, length: ns.length)).map { match in
+            ReadingToken(text: ns.substring(with: match.range), sourceRange: match.range, displayRange: match.range, x: 0, width: 0)
+        }
+        guard !tokens.isEmpty else { return [] }
+        // DOM lays out whole-document tokens. Do not create a giant shaped CoreText line here.
+        return [ReadingUnit(text: document.normalizedText, sentenceIndex: 0, sourceRange: NSRange(location: 0, length: ns.length), width: 0, tokens: tokens, inkLeft: 0, fontScale: 1)]
     }
     private static func fittingSingleScale(_ atom: Atom, settings: ReaderSettings) -> Double {
         if fits(width: atom.width, first: atom, settings: settings) { return 1 }

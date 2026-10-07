@@ -61,10 +61,10 @@ struct SettingsView: View {
                 } header: {
                     Text("소스")
                 } footer: {
-                    Text("입력 형식을 선택하고 글 적용을 눌러줘. Markdown의 문법은 읽기 전에 정리돼. 크기 제한은 두지 않지만, 큰 문서의 처리 가능 크기는 기기 메모리에 따라 달라.")
+                    Text("입력 형식을 선택하고 글 적용을 눌러줘. Markdown은 제목·목록·인용·코드·표·링크·이미지 서식으로 표시돼. 크기 제한은 두지 않지만, 큰 문서의 처리 가능 크기는 기기 메모리에 따라 달라.")
                 }
 
-                Section("읽기 방식") {
+                Section {
                     Picker("표시", selection: $store.settings.presentation) {
                         ForEach(PresentationMode.allCases) { mode in
                             Text(mode.title).tag(mode)
@@ -77,6 +77,10 @@ struct SettingsView: View {
                         }
                     }
                     .accessibilityIdentifier("settings.segmentation")
+                } header: {
+                    Text("읽기 방식")
+                } footer: {
+                    Text("Full은 전체 본문을 자연스럽게 줄바꿈해서 보여줘. 한 줄 가로 스크롤은 전체 본문을 한 줄로 펼쳐 보여주며, 블록 서식은 순서대로 이어져.")
                 }
 
                 Section("WORD FOCUS") {
@@ -132,11 +136,11 @@ struct SettingsView: View {
                     Stepper(value: $store.settings.pastLines, in: 0...6) {
                         valueRow("과거 표시 줄 수", value: "\(store.settings.pastLines)줄")
                     }
-                    .disabled(store.settings.presentation == .current)
+                    .disabled(store.settings.presentation != .past || store.settings.segmentation == .full)
                 } header: {
                     Text("글자와 여백")
                 } footer: {
-                    Text("현재 조각 1줄과 과거 맥락 최대 \(capacity)줄을 표시할 수 있어. 과거 맥락은 설정한 줄 수 안에서 표시해. px는 선택한 패널 해상도 기준이야.")
+                    Text("현재 조각 1줄과 과거 맥락 최대 \(capacity)줄을 표시할 수 있어. 과거 맥락은 설정한 줄 수 안에서 같은 대비로 표시해. Full과 가로 스크롤에서는 전체 본문을 스크롤해. px는 선택한 패널 해상도 기준이야.")
                 }
 
                 Section("기타") {

@@ -92,7 +92,7 @@ final class ReaderFlowTests: XCTestCase {
         app.buttons["wheel.right"].tap()
         let focused = current.label
         let value = current.value as? String
-        for title in ["현재 조각만", "현재 문장 안의 맥락", "과거 맥락 누적"] {
+        for title in ["현재 조각만", "과거 맥락 누적"] {
             openSettings()
             choose("settings.presentation", title: title)
             closeSettings()
@@ -268,13 +268,13 @@ final class ReaderFlowTests: XCTestCase {
         XCTAssertEqual(current.label, "둘째 항목")
     }
 
-    func testCurrentOnlyCentersAndBothTypewritersShareBottomPosition() {
+    func testCurrentOnlyCentersAndPastUsesBottomPosition() {
         let bottom = current.frame.midY
         openSettings(); choose("settings.presentation", title: "현재 조각만"); closeSettings()
         let display = element("reader.display").frame
         XCTAssertEqual(current.frame.midY, display.midY, accuracy: 1)
         XCTAssertLessThan(current.frame.midY, bottom)
-        openSettings(); choose("settings.presentation", title: "현재 문장 안의 맥락"); closeSettings()
+        openSettings(); choose("settings.presentation", title: "과거 맥락 누적"); closeSettings()
         XCTAssertEqual(current.frame.midY, bottom, accuracy: 1)
         app.buttons["wheel.down"].tap()
         XCTAssertEqual(current.frame.midY, bottom, accuracy: 1)
@@ -299,6 +299,59 @@ final class ReaderFlowTests: XCTestCase {
         XCTAssertEqual(element("wheel").value as? String, "어절 포커스 없음")
         app.buttons["wheel.up"].tap()
         XCTAssertEqual(current.label, "짧게")
+    }
+
+    func testFullMarkdownAndHorizontalDocumentViews() {
+        openSettings()
+        choose("settings.sourceFormat", title: "Markdown")
+        replaceDraft(with: "# 제목\n\n첫 **강조** 문단.\n\n- 목록 항목\n\n> 인용 내용\n\n```swift\nlet value = 1\n```\n\n| 열 | 값 |\n| --- | --- |\n| A | B |\n\n" + String(repeating: "긴 본문 내용입니다. ", count: 20))
+        app.buttons["settings.applyText"].tap()
+        choose("settings.segmentation", title: "Full · 전체 본문")
+        closeSettings()
+        let document = element("reader.document")
+        XCTAssertTrue(document.waitForExistence(timeout: 8))
+        XCTAssertTrue(element("reader.display").frame.contains(document.frame))
+        XCTAssertFalse(current.label.contains("**"))
+        XCTAssertFalse(current.label.contains("```"))
+        XCTAssertTrue(app.staticTexts["제목"].waitForExistence(timeout: 5))
+        let initial = XCTAttachment(screenshot: app.screenshot())
+        initial.name = "Full Markdown formatted document"
+        initial.lifetime = .keepAlways
+        add(initial)
+        app.buttons["wheel.down"].tap()
+        document.swipeUp()
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "Full Markdown after vertical scroll"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        XCTAssertTrue(app.buttons["home.settings"].isHittable)
+        openSettings()
+        choose("settings.presentation", title: "한 줄 가로 스크롤")
+        closeSettings()
+        let horizontal = element("reader.horizontal")
+        XCTAssertTrue(horizontal.waitForExistence(timeout: 8))
+        XCTAssertTrue(element("reader.display").frame.contains(horizontal.frame))
+        horizontal.swipeLeft()
+        XCTAssertTrue(app.buttons["home.settings"].isHittable)
+        rotateWheel(clockwise: true)
+        XCTAssertNotEqual(element("wheel").value as? String, "어절 포커스 없음")
+    }
+
+    func testCounterclockwiseMovesUpWithinVisibleViewport() {
+        openSettings()
+        replaceDraft(with: "첫줄. 둘째줄. 셋째줄. 넷째줄. 다섯째줄. 여섯째줄.")
+        app.buttons["settings.applyText"].tap()
+        choose("settings.presentation", title: "과거 맥락 누적")
+        closeSettings()
+        for _ in 0..<4 { app.buttons["wheel.right"].tap() }
+        let bottomY = current.frame.minY
+        rotateWheel(clockwise: false)
+        let previousY = current.frame.minY
+        XCTAssertLessThan(previousY, bottomY)
+        XCTAssertGreaterThanOrEqual(previousY, element("reader.display").frame.minY)
+        rotateWheel(clockwise: false)
+        XCTAssertLessThanOrEqual(current.frame.minY, previousY)
+        XCTAssertGreaterThanOrEqual(current.frame.minY, element("reader.display").frame.minY)
     }
 
     private func rotateWheel(clockwise: Bool) {
@@ -373,6 +426,9 @@ final class ReaderFlowTests: XCTestCase {
         let picker = element(id)
         reveal(picker)
         picker.tap()
+        if id == "settings.presentation" {
+            XCTAssertFalse(app.buttons["현재 문장 안의 맥락"].exists)
+        }
         let option = app.buttons[title]
         if option.waitForExistence(timeout: 2) { option.tap() }
         else {

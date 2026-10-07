@@ -49,30 +49,61 @@ struct ReaderDisplay: View {
         .accessibilityIdentifier("reader.display")
     }
 
+    @ViewBuilder
     private var displayText: some View {
+        if store.settings.segmentation == .full || store.settings.presentation == .horizontal {
+            RichDocumentView(store: store, width: width, height: height)
+                .frame(width: width, height: height)
+                .overlay(alignment: .topLeading) {
+                    // A stable reading-position announcement complements the document's native accessibility tree.
+                    Color.clear.frame(width: 1, height: 1)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(store.current?.text ?? "설정에서 읽을 글을 넣어줘")
+                        .accessibilityIdentifier("reader.current")
+                        .accessibilityValue("\(store.index + (store.units.isEmpty ? 0 : 1)) / \(store.units.count)")
+                        .allowsHitTesting(false)
+                }
+        } else {
+            chunkDisplay
+        }
+    }
+
+    private var chunkDisplay: some View {
         let settings = store.settings
         let lineHeight = Double(ReadingEngine.font(settings).lineHeight)
         let currentTop = PresentationGeometry.currentTop(settings: settings)
         return ZStack(alignment: .topLeading) {
-            ForEach(Array(store.visiblePast.enumerated()), id: \.element.id) { offset, unit in
-                let distance = store.visiblePast.count - offset
-                let alpha = [0.48, 0.28, 0.16, 0.10, 0.08, 0.06][min(distance - 1, 5)]
-                renderedLine(unit, alpha: alpha, focused: nil)
-                    .offset(x: lineX(unit), y: currentTop - Double(distance) * (lineHeight + settings.lineGap))
-                    .accessibilityHidden(true)
+            if store.current == nil {
+                activeLine(nil, y: currentTop)
+            } else if settings.presentation == .current {
+                activeLine(store.current, y: currentTop)
+            } else {
+                ForEach(Array(store.displayedUnits.enumerated()), id: \.element.id) { offset, unit in
+                    let distance = store.displayedUnits.count - 1 - offset
+                    let top = currentTop - Double(distance) * (lineHeight + settings.lineGap)
+                    if unit.id == store.current?.id {
+                        activeLine(unit, y: top)
+                    } else {
+                        renderedLine(unit, alpha: 1, focused: nil)
+                            .offset(x: lineX(unit), y: top)
+                            .accessibilityHidden(true)
+                    }
+                }
             }
-            renderedLine(store.current, alpha: 1, focused: store.focusedToken)
-                .offset(x: store.current.map(lineX) ?? settings.padding, y: currentTop)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(store.current?.text ?? "설정에서 읽을 글을 넣어줘")
-                .accessibilityIdentifier("reader.current")
-                .accessibilityValue("\(store.index + (store.units.isEmpty ? 0 : 1)) / \(store.units.count)")
         }
-        // Lay out at the panel's actual pixel font size, then scale the entire layer.
-        // Setting a smaller font instead changes SF optical metrics and invalidates chunk bounds.
+        // Shape at panel pixels before scaling, keeping font metrics and chunk bounds identical.
         .frame(width: settings.panel.pixels.width, height: settings.panel.pixels.height, alignment: .topLeading)
         .scaleEffect(scale, anchor: .topLeading)
         .frame(width: width, height: height, alignment: .topLeading)
+    }
+
+    private func activeLine(_ unit: ReadingUnit?, y: Double) -> some View {
+        renderedLine(unit, alpha: 1, focused: store.focusedToken)
+            .offset(x: unit.map(lineX) ?? store.settings.padding, y: y)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(unit?.text ?? "설정에서 읽을 글을 넣어줘")
+            .accessibilityIdentifier("reader.current")
+            .accessibilityValue("\(store.index + (store.units.isEmpty ? 0 : 1)) / \(store.units.count)")
     }
 
     private func lineX(_ unit: ReadingUnit) -> Double {

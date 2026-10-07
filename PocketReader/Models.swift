@@ -1,25 +1,26 @@
 import Foundation
 
 enum PresentationMode: String, Codable, CaseIterable, Identifiable {
-    case current, past, sentence
+    case current, past, horizontal
     var id: String { rawValue }
     var title: String {
         switch self {
         case .current: return "현재 조각만"
         case .past: return "과거 맥락 누적"
-        case .sentence: return "현재 문장 안의 맥락"
+        case .horizontal: return "한 줄 가로 스크롤"
         }
     }
 }
 
 enum SegmentationMode: String, Codable, CaseIterable, Identifiable {
-    case balanced, greedy, eojeol
+    case balanced, greedy, eojeol, full
     var id: String { rawValue }
     var title: String {
         switch self {
         case .balanced: return "Visual Balanced"
         case .greedy: return "Visual Greedy"
         case .eojeol: return "3–5어절 기준"
+        case .full: return "Full · 전체 본문"
         }
     }
 }
@@ -96,7 +97,8 @@ extension ReaderSettings {
     init(from decoder: Decoder) throws {
         self.init()
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        presentation = try c.decodeIfPresent(PresentationMode.self, forKey: .presentation) ?? presentation
+        let oldPresentation = try c.decodeIfPresent(String.self, forKey: .presentation)
+        presentation = oldPresentation.flatMap(PresentationMode.init(rawValue:)) ?? .past
         segmentation = try c.decodeIfPresent(SegmentationMode.self, forKey: .segmentation) ?? segmentation
         wordFocusStyle = try c.decodeIfPresent(WordFocusStyle.self, forKey: .wordFocusStyle) ?? wordFocusStyle
         panel = try c.decodeIfPresent(PanelPreset.self, forKey: .panel) ?? panel

@@ -4,7 +4,7 @@ import XCTest
 final class ReadingEngineTests: XCTestCase {
     func testAllModesPreserveContentAndFitNativeWidth() {
         let text = "지금 읽는 부분은 같은 위치에 머문다. 이미 읽은 내용은 위에 남는다.\n\nLong English text should preserve every word, with natural boundaries."
-        for mode in SegmentationMode.allCases {
+        for mode in SegmentationMode.allCases.filter({ $0 != .full }) {
             var settings = ReaderSettings()
             settings.segmentation = mode
             settings.panel = .bar225
@@ -18,7 +18,7 @@ final class ReadingEngineTests: XCTestCase {
     }
     func testLongUnicodeEojeolRemainsAtomicAndFits() {
         let text = String(repeating: "가족👨‍👩‍👧‍👦é", count: 35)
-        for mode in SegmentationMode.allCases {
+        for mode in SegmentationMode.allCases.filter({ $0 != .full }) {
             var settings = ReaderSettings()
             settings.segmentation = mode
             settings.panel = .bar225
@@ -45,7 +45,7 @@ final class ReadingEngineTests: XCTestCase {
         let text = "가나다라마바사아자차카타파하 아주 짧은 글, 그리고 다양한 어절의 길이를 비교한다. English extraordinarilylongword and 한글👨‍👩‍👧‍👦도 유지한다."
         let document = SourceDocument(source: text, format: .plain)
         for panel in PanelPreset.allCases {
-            for mode in SegmentationMode.allCases {
+            for mode in SegmentationMode.allCases.filter({ $0 != .full }) {
                 for size in [10.0, 26.0, 34.0] {
                     var settings = ReaderSettings()
                     settings.panel = panel; settings.segmentation = mode; settings.fontSize = size
@@ -86,7 +86,7 @@ final class ReadingEngineTests: XCTestCase {
             let top = PresentationGeometry.currentTop(settings: settings)
             settings.showProgress.toggle()
             XCTAssertEqual(PresentationGeometry.currentTop(settings: settings), top)
-            settings.presentation = .sentence
+            settings.presentation = .past
             XCTAssertEqual(PresentationGeometry.currentTop(settings: settings), top)
         }
     }
@@ -121,7 +121,7 @@ final class ReaderStoreTests: XCTestCase {
         let store = ReaderStore(persistenceURL: nil)
         store.updateText("첫 문장에는 충분히 여러 단어가 있어서 조각을 나눌 수 있다. 두 번째 문장도 충분히 길어서 나눠진다.")
         store.settings.panel = .bar225
-        store.settings.presentation = .sentence
+        store.settings.presentation = .past
         store.rebuild()
         store.move(1)
         let previous = store.index
@@ -129,7 +129,7 @@ final class ReaderStoreTests: XCTestCase {
         XCTAssertEqual(store.index, previous, "At first sentence, navigation is a no-op.")
         store.moveSentence(1)
         XCTAssertEqual(store.current?.sentenceIndex, 1)
-        XCTAssertTrue(store.visiblePast.isEmpty)
+        XCTAssertEqual(store.viewportEndIndex, store.index)
         let nextStart = store.index
         store.moveSentence(1)
         XCTAssertEqual(store.index, nextStart)
@@ -282,18 +282,43 @@ final class ReaderStoreTests: XCTestCase {
         store.moveFocus(Int.min)
         XCTAssertEqual(store.index, 0); XCTAssertEqual(store.focusedTokenIndex, 0)
     }
-    func testFineCrossSentenceUsesExistingSentenceBoundedHistory() {
+    func testCounterclockwiseKeepsViewportUntilCrossingItsTop() {
         let store = ReaderStore(persistenceURL: nil)
-        store.settings.presentation = .sentence
-        store.updateText("첫 문장을 천천히 읽는다. 둘째 문장도 천천히 읽는다.")
-        store.moveFocus(store.units.filter { $0.sentenceIndex == 0 }.flatMap(\.tokens).count)
+        store.updateText(String(repeating: "문장을 하나씩 읽는다. ", count: 20))
+        store.move(8)
+        let end = store.viewportEndIndex
+        let visible = store.displayedUnits
+        store.moveFocus(1); store.moveFocus(-1)
+        XCTAssertEqual(store.index, 7)
+        XCTAssertEqual(store.viewportEndIndex, end)
+        XCTAssertEqual(store.displayedUnits, visible)
+        store.moveFocus(-store.current!.tokens.count * 10)
+        XCTAssertLessThan(store.viewportEndIndex, end)
+        XCTAssertTrue(store.displayedUnits.contains(store.current!))
+    }
+    func testWholeDocumentModesKeepAllTokensAndRetiredModeMigrates() throws {
+        var settings = ReaderSettings(); settings.segmentation = .full
+        let text = "첫 문장.\n\n둘째 문장."
+        let units = ReadingEngine.build(text: text, settings: settings)
+        XCTAssertEqual(units.count, 1); XCTAssertEqual(units[0].tokens.count, 4)
+        settings.segmentation = .balanced; settings.presentation = .horizontal
+        XCTAssertEqual(ReadingEngine.build(text: text, settings: settings).count, 1)
+        let data = Data("{\"presentation\":\"sentence\"}".utf8)
+        XCTAssertEqual(try JSONDecoder().decode(ReaderSettings.self, from: data).presentation, .past)
+        XCTAssertFalse(PresentationMode.allCases.contains(where: { $0.rawValue == "sentence" }))
+    }
+    func testWholeDocumentCoarseNavigationStartsAtFocusedSentence() {
+        let store = ReaderStore(persistenceURL: nil)
+        store.updateText("첫 문장. 둘째 문장. 셋째 문장. 넷째 문장.")
+        store.settings.segmentation = .full
+        store.rebuild()
         store.moveFocus(1)
-        XCTAssertEqual(store.current?.sentenceIndex, 1)
-        XCTAssertEqual(store.focusedTokenIndex, 0)
-        XCTAssertTrue(store.visiblePast.isEmpty)
-        store.moveFocus(-1)
-        XCTAssertEqual(store.current?.sentenceIndex, 0)
-        XCTAssertEqual(store.focusedTokenIndex, store.current!.tokens.count - 1)
+        store.moveFocus(4)
+        store.moveSentence(1)
+        XCTAssertNil(store.focusedTokenIndex)
+        XCTAssertEqual(store.coarseTokenIndex, 6)
+        store.move(-1)
+        XCTAssertEqual(store.coarseTokenIndex, 5)
     }
     func testSampleModeNeverWritesPersistence() {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

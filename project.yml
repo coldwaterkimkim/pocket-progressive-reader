@@ -12,7 +12,12 @@ targets:
   PocketReader:
     type: application
     platform: iOS
-    sources: [PocketReader]
+    sources:
+      - path: PocketReader
+        excludes: [RichReader]
+      - path: PocketReader/RichReader
+        type: folder
+        buildPhase: resources
     info:
       path: PocketReader/Info.plist
       properties:
