@@ -52,7 +52,13 @@ struct HomeView: View {
         }
         .ignoresSafeArea()
         .sheet(item: $sheet) { _ in SettingsView(store: store) }
-        .onChange(of: store.settings) { _, _ in store.rebuild() }
+        .onChange(of: store.settings) { old, new in
+            if old.segmentation != new.segmentation || old.panel != new.panel || old.fontSize != new.fontSize
+                || old.padding != new.padding || old.alignment != new.alignment
+                || (new.alignment == .gazeAnchor && old.anchorFraction != new.anchorFraction) {
+                store.rebuild()
+            } else { store.save() }
+        }
         .onChange(of: scenePhase) { _, phase in
             UIApplication.shared.isIdleTimerDisabled = phase == .active && sheet == nil
             if phase != .active { store.save() }

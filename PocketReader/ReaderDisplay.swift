@@ -51,30 +51,38 @@ struct ReaderDisplay: View {
     private var displayText: some View {
         let settings = store.settings
         let lineHeight = Double(ReadingEngine.font(settings).lineHeight)
-        let verticalInset = min(settings.padding, max(0, settings.panel.pixels.height - 8 - lineHeight))
-        let currentTop = max(0, settings.panel.pixels.height - verticalInset - 8 - lineHeight) * scale
+        let currentTop = PresentationGeometry.currentTop(settings: settings)
         return ZStack(alignment: .topLeading) {
             ForEach(Array(store.visiblePast.enumerated()), id: \.element.id) { offset, unit in
                 let distance = store.visiblePast.count - offset
                 let alpha = [0.48, 0.28, 0.16, 0.10, 0.08, 0.06][min(distance - 1, 5)]
-                line(unit.text)
+                line(unit)
                     .foregroundStyle(ReaderPalette.ink.opacity(alpha))
-                    .offset(x: settings.padding * scale, y: currentTop - Double(distance) * (lineHeight + settings.lineGap) * scale)
+                    .offset(x: lineX(unit), y: currentTop - Double(distance) * (lineHeight + settings.lineGap))
                     .accessibilityHidden(true)
             }
-            line(store.current?.text ?? "설정에서 읽을 글을 넣어줘")
+            line(store.current)
                 .foregroundStyle(ReaderPalette.ink)
-                .offset(x: settings.padding * scale, y: currentTop)
+                .offset(x: store.current.map(lineX) ?? settings.padding, y: currentTop)
                 .accessibilityIdentifier("reader.current")
                 .accessibilityValue("\(store.index + (store.units.isEmpty ? 0 : 1)) / \(store.units.count)")
         }
+        // Lay out at the panel's actual pixel font size, then scale the entire layer.
+        // Setting a smaller font instead changes SF optical metrics and invalidates chunk bounds.
+        .frame(width: settings.panel.pixels.width, height: settings.panel.pixels.height, alignment: .topLeading)
+        .scaleEffect(scale, anchor: .topLeading)
         .frame(width: width, height: height, alignment: .topLeading)
     }
 
-    private func line(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: store.settings.fontSize * scale))
+    private func lineX(_ unit: ReadingUnit) -> Double {
+        let placement = AnchorGeometry.placement(width: unit.width, firstWidth: unit.firstEojeolWidth, firstCenter: unit.firstEojeolCenter, inkLeft: unit.inkLeft, settings: store.settings)
+        return store.settings.padding + placement.origin
+    }
+    private func line(_ unit: ReadingUnit?) -> some View {
+        Text(unit?.text ?? "설정에서 읽을 글을 넣어줘")
+            .font(.system(size: store.settings.fontSize * (unit?.fontScale ?? 1)))
             .lineLimit(1)
-            .frame(width: max(1, width - store.settings.padding * scale * 2), height: Double(ReadingEngine.font(store.settings).lineHeight) * scale, alignment: .leading)
+            .fixedSize(horizontal: true, vertical: false)
+            .frame(height: Double(ReadingEngine.font(store.settings).lineHeight))
     }
 }

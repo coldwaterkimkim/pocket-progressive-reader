@@ -10,11 +10,15 @@
 		2301A639CF746821746DDF13 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F239D4E842D69538F2150338 /* HomeView.swift */; };
 		2E4BFAF66903C6422D81F9C7 /* ClickWheel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4586EEAACC54B83AABF94D9A /* ClickWheel.swift */; };
 		438F2E2FF7A2861780E4A615 /* ReaderFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97471180F9DC7F7E62F3F5B9 /* ReaderFlowTests.swift */; };
+		4CA7A0DD52AE2BDEC4C64653 /* SourceDocumentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0BB87FCDBB10CE1CD23927C /* SourceDocumentTests.swift */; };
 		562ADD339C2C9079F3FEAFF7 /* PocketReaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4E33CA21876231448933FB9 /* PocketReaderApp.swift */; };
 		65DD2BFC36344B6529764302 /* ReaderDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE4431E1DA64519729ED07E /* ReaderDisplay.swift */; };
 		6F8448101735E233E998CF98 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D8DEA4C2E27E1D5552D8E1BC /* Assets.xcassets */; };
 		A4B37D00B86D737C247667E3 /* ReadingEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71C214930088494A833F691 /* ReadingEngineTests.swift */; };
 		BE9D0390F005A9EE6FB91600 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533ADFFCE2F3E2529619387B /* Models.swift */; };
+		C4D03AA871A4D6828BFA5BCF /* AnchorGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8AE1803318DE59524801842 /* AnchorGeometry.swift */; };
+		CB7A4018FCB62ED4BB055726 /* SourceDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0783B00209693AC3E875AD4 /* SourceDocument.swift */; };
+		D32833E167F5EF294C01B24C /* NativeTextMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CC61E98324411669BD5B5E0 /* NativeTextMetrics.swift */; };
 		D72C9FB8E0FA722EF9662727 /* MetalSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271A653C0C412F1F182688AC /* MetalSurface.swift */; };
 		DAE53B64059D80FF5636ABAA /* ReadingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9FBB0D14FB892CAE54A7D28 /* ReadingEngine.swift */; };
 		E8508ACA0A417772A370B6CC /* ReaderStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1509A5C24A166EDC9047DA2 /* ReaderStore.swift */; };
@@ -44,6 +48,7 @@
 		4C891C6B93236FCDABA4012D /* PocketReader.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PocketReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		533ADFFCE2F3E2529619387B /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		702F6ECFFE79B36D61632D59 /* PocketReaderUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PocketReaderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7CC61E98324411669BD5B5E0 /* NativeTextMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeTextMetrics.swift; sourceTree = "<group>"; };
 		8D0B8129A62F774519E3EE24 /* PocketReaderTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = PocketReaderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		960FD7417A47B513E0F0D516 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		97471180F9DC7F7E62F3F5B9 /* ReaderFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderFlowTests.swift; sourceTree = "<group>"; };
@@ -54,7 +59,10 @@
 		D1509A5C24A166EDC9047DA2 /* ReaderStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderStore.swift; sourceTree = "<group>"; };
 		D8DEA4C2E27E1D5552D8E1BC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D9FBB0D14FB892CAE54A7D28 /* ReadingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingEngine.swift; sourceTree = "<group>"; };
+		E0783B00209693AC3E875AD4 /* SourceDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceDocument.swift; sourceTree = "<group>"; };
+		F0BB87FCDBB10CE1CD23927C /* SourceDocumentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceDocumentTests.swift; sourceTree = "<group>"; };
 		F239D4E842D69538F2150338 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		F8AE1803318DE59524801842 /* AnchorGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorGeometry.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -71,17 +79,20 @@
 		0A0A55627377ABB0EC7F6D8C /* PocketReader */ = {
 			isa = PBXGroup;
 			children = (
+				F8AE1803318DE59524801842 /* AnchorGeometry.swift */,
 				D8DEA4C2E27E1D5552D8E1BC /* Assets.xcassets */,
 				4586EEAACC54B83AABF94D9A /* ClickWheel.swift */,
 				F239D4E842D69538F2150338 /* HomeView.swift */,
 				C1070AA5134930D9674A78B2 /* Info.plist */,
 				271A653C0C412F1F182688AC /* MetalSurface.swift */,
 				533ADFFCE2F3E2529619387B /* Models.swift */,
+				7CC61E98324411669BD5B5E0 /* NativeTextMetrics.swift */,
 				A4E33CA21876231448933FB9 /* PocketReaderApp.swift */,
 				9EE4431E1DA64519729ED07E /* ReaderDisplay.swift */,
 				D1509A5C24A166EDC9047DA2 /* ReaderStore.swift */,
 				D9FBB0D14FB892CAE54A7D28 /* ReadingEngine.swift */,
 				960FD7417A47B513E0F0D516 /* SettingsView.swift */,
+				E0783B00209693AC3E875AD4 /* SourceDocument.swift */,
 			);
 			path = PocketReader;
 			sourceTree = "<group>";
@@ -90,6 +101,7 @@
 			isa = PBXGroup;
 			children = (
 				A71C214930088494A833F691 /* ReadingEngineTests.swift */,
+				F0BB87FCDBB10CE1CD23927C /* SourceDocumentTests.swift */,
 			);
 			path = PocketReaderTests;
 			sourceTree = "<group>";
@@ -228,6 +240,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A4B37D00B86D737C247667E3 /* ReadingEngineTests.swift in Sources */,
+				4CA7A0DD52AE2BDEC4C64653 /* SourceDocumentTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -235,15 +248,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C4D03AA871A4D6828BFA5BCF /* AnchorGeometry.swift in Sources */,
 				2E4BFAF66903C6422D81F9C7 /* ClickWheel.swift in Sources */,
 				2301A639CF746821746DDF13 /* HomeView.swift in Sources */,
 				D72C9FB8E0FA722EF9662727 /* MetalSurface.swift in Sources */,
 				BE9D0390F005A9EE6FB91600 /* Models.swift in Sources */,
+				D32833E167F5EF294C01B24C /* NativeTextMetrics.swift in Sources */,
 				562ADD339C2C9079F3FEAFF7 /* PocketReaderApp.swift in Sources */,
 				65DD2BFC36344B6529764302 /* ReaderDisplay.swift in Sources */,
 				E8508ACA0A417772A370B6CC /* ReaderStore.swift in Sources */,
 				DAE53B64059D80FF5636ABAA /* ReadingEngine.swift in Sources */,
 				F0B3646EEA19651E8C458560 /* SettingsView.swift in Sources */,
+				CB7A4018FCB62ED4BB055726 /* SourceDocument.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

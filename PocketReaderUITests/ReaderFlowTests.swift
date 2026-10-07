@@ -198,6 +198,80 @@ final class ReaderFlowTests: XCTestCase {
         XCTAssertEqual(current.label, "파일에서 온 다음 문장.")
     }
 
+    func testImportsMarkdownThroughSystemFilesPicker() {
+        openSettings()
+        let button = app.buttons["settings.importMD"]
+        reveal(button); button.tap()
+        // Navigate the real document picker; the debug fixture lives in the app's Documents folder.
+        let fileLabels = ["Reader-Markdown-Test.md", "Reader-Markdown-Test"]
+        if !filesItemExists(fileLabels, timeout: 2) {
+            _ = tapFilesItem(["Browse", "둘러보기", "탐색"], timeout: 3)
+            if !filesItemExists(["On My iPhone", "나의 iPhone"], timeout: 2) {
+                _ = tapFilesItem(["Browse", "둘러보기", "탐색"], timeout: 2)
+            }
+            XCTAssertTrue(tapFilesItem(["On My iPhone", "나의 iPhone"], timeout: 5),
+                          "The app Documents folder must be exposed in On My iPhone")
+            XCTAssertTrue(tapFilesItem(["Pocket Reader", "PocketReader"], timeout: 5))
+        }
+        let fileCell = fileLabels.map {
+            app.cells.containing(.staticText, identifier: $0).firstMatch
+        }.first(where: { $0.exists && $0.isHittable })
+        if let fileCell { fileCell.tap() }
+        else {
+            XCTAssertTrue(tapFilesItem(fileLabels, timeout: 5), "The seeded TXT fixture must be selectable")
+        }
+        let editor = app.textViews["settings.text"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 5))
+        let imported = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value CONTAINS %@", "## **마크다운 제목**"), object: editor)
+        XCTAssertEqual(XCTWaiter.wait(for: [imported], timeout: 5), .completed)
+        app.buttons["settings.applyText"].tap(); closeSettings()
+        XCTAssertEqual(current.label, "마크다운 제목")
+        app.buttons["wheel.down"].tap()
+        XCTAssertEqual(current.label, "첫 항목")
+        app.buttons["wheel.down"].tap()
+        XCTAssertEqual(current.label, "둘째 항목")
+    }
+
+    func testCurrentOnlyCentersAndBothTypewritersShareBottomPosition() {
+        let bottom = current.frame.midY
+        openSettings(); choose("settings.presentation", title: "현재 조각만"); closeSettings()
+        let display = element("reader.display").frame
+        XCTAssertEqual(current.frame.midY, display.midY, accuracy: 1)
+        XCTAssertLessThan(current.frame.midY, bottom)
+        openSettings(); choose("settings.presentation", title: "현재 문장 안의 맥락"); closeSettings()
+        XCTAssertEqual(current.frame.midY, bottom, accuracy: 1)
+        app.buttons["wheel.down"].tap()
+        XCTAssertEqual(current.frame.midY, bottom, accuracy: 1)
+    }
+    func testMarkdownPasteAndGazeAlignmentPreserveMinimalHome() {
+        openSettings()
+        choose("settings.sourceFormat", title: "Markdown")
+        replaceDraft(with: "## **짧게**\n\n### [조금더길게](https://example.com/a_(b))\n\n- 끝")
+        let editor = app.textViews["settings.text"]
+        XCTAssertLessThanOrEqual(editor.frame.height, 185)
+        app.buttons["settings.applyText"].tap()
+        choose("settings.alignment", title: "고정 시선 앵커")
+        choose("settings.presentation", title: "현재 조각만")
+        closeSettings()
+        XCTAssertEqual(current.label, "짧게")
+        let screen = element("reader.display").frame
+        XCTAssertTrue(screen.contains(current.frame))
+        let anchor = current.frame.midX
+        app.buttons["wheel.down"].tap()
+        XCTAssertEqual(current.label, "조금더길게")
+        XCTAssertTrue(screen.contains(current.frame))
+        XCTAssertEqual(current.frame.midX, anchor, accuracy: 1)
+        openSettings()
+        let slider = app.sliders["settings.anchorX"]
+        reveal(slider)
+        slider.adjust(toNormalizedSliderPosition: 1)
+        closeSettings()
+        XCTAssertGreaterThan(current.frame.midX, anchor + screen.width * 0.1)
+        XCTAssertTrue(screen.contains(current.frame))
+        app.buttons["wheel.up"].tap()
+        XCTAssertEqual(current.label, "짧게")
+    }
+
     private func filesItemExists(_ labels: [String], timeout: TimeInterval) -> Bool {
         app.descendants(matching: .any)
             .matching(NSPredicate(format: "label IN %@", labels))

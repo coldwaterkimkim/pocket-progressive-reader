@@ -11,6 +11,8 @@ struct PocketReaderApp: App {
             try? FileManager.default.createDirectory(at: documents, withIntermediateDirectories: true)
             try? "파일에서 온 첫 문장. 파일에서 온 다음 문장.".write(
                 to: documents.appendingPathComponent("Reader-Import-Test.txt"), atomically: true, encoding: .utf8)
+            try? "## **마크다운 제목**\n\n- [첫 항목](https://example.com/a_(b))\n- `둘째 항목`".write(
+                to: documents.appendingPathComponent("Reader-Markdown-Test.md"), atomically: true, encoding: .utf8)
         }
         #endif
     }

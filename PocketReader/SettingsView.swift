@@ -6,6 +6,8 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var draft = ""
     @State private var importing = false
+    @State private var draftFormat: SourceFormat = .plain
+    @State private var importFormat: SourceFormat = .plain
     @State private var importError: String?
     @State private var confirmingClose = false
     @State private var applied = false
@@ -20,8 +22,12 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section {
+                    Picker("입력 형식", selection: $draftFormat) {
+                        ForEach(SourceFormat.allCases) { format in Text(format.title).tag(format) }
+                    }
+                    .accessibilityIdentifier("settings.sourceFormat")
                     TextEditor(text: $draft)
-                        .frame(minHeight: 160)
+                        .frame(height: 180)
                         .focused($editingText)
                         .accessibilityLabel("읽을 글")
                         .accessibilityIdentifier("settings.text")
@@ -42,13 +48,20 @@ struct SettingsView: View {
                     }
                     Button("TXT 파일 불러오기", systemImage: "doc.text") {
                         editingText = false
+                        importFormat = .plain
                         importing = true
                     }
                     .accessibilityIdentifier("settings.import")
+                    Button("Markdown 파일 불러오기", systemImage: "doc.text") {
+                        editingText = false
+                        importFormat = .markdown
+                        importing = true
+                    }
+                    .accessibilityIdentifier("settings.importMD")
                 } header: {
-                    Text("읽을 글")
+                    Text("소스")
                 } footer: {
-                    Text("본문을 붙여넣고 글 적용을 눌러줘. 새 글은 처음부터 읽게 돼. 최대 200,000 UTF-16 문자까지 지원해.")
+                    Text("입력 형식을 선택하고 글 적용을 눌러줘. Markdown의 문법은 읽기 전에 정리돼. 크기 제한은 두지 않지만, 큰 문서의 처리 가능 크기는 기기 메모리에 따라 달라.")
                 }
 
                 Section("읽기 방식") {
@@ -64,6 +77,22 @@ struct SettingsView: View {
                         }
                     }
                     .accessibilityIdentifier("settings.segmentation")
+                }
+
+                Section("시선") {
+                    Picker("정렬", selection: $store.settings.alignment) {
+                        ForEach(AlignmentMode.allCases) { mode in Text(mode.title).tag(mode) }
+                    }
+                    .accessibilityIdentifier("settings.alignment")
+                    VStack(alignment: .leading) {
+                        Text("앵커 X · \(Int((store.settings.anchorFraction * 100).rounded()))%")
+                        Slider(value: $store.settings.anchorFraction, in: 0.2...0.5, step: 0.01)
+                            .accessibilityIdentifier("settings.anchorX")
+                            .accessibilityLabel("앵커 X")
+                    }
+                    .disabled(store.settings.alignment == .left)
+                    Text("첫 어절의 시각적 중심을 고정해. 어절 하나가 공간보다 길면 그 조각의 글자만 줄여 모두 표시해.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
 
                 Section {
@@ -91,7 +120,7 @@ struct SettingsView: View {
                         .padding(.vertical, 4)
                     }
                 } header: {
-                    Text("디스플레이")
+                    Text("디스플레이 / 실험")
                 } footer: {
                     Text("기본은 화면에 맞춘 크기야. 실제 크기는 보정에 따른 근사치이며, 화면보다 큰 패널은 들어갈 크기로 줄여 표시해.")
                 }
@@ -139,7 +168,7 @@ struct SettingsView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("완료") {
                         editingText = false
-                        if draft != store.text { confirmingClose = true }
+                        if isDirty { confirmingClose = true }
                         else { dismiss() }
                     }
                         .accessibilityIdentifier("settings.close")
@@ -148,10 +177,12 @@ struct SettingsView: View {
             .onAppear {
                 guard !loadedDraft else { return }
                 draft = store.text
+                draftFormat = store.sourceFormat
                 loadedDraft = true
             }
             .onChange(of: draft) { _, _ in applied = false }
-            .interactiveDismissDisabled(draft != store.text)
+            .onChange(of: draftFormat) { _, _ in applied = false }
+            .interactiveDismissDisabled(isDirty)
             .confirmationDialog("적용하지 않은 글이 있어", isPresented: $confirmingClose, titleVisibility: .visible) {
                 Button("글 적용하고 닫기") {
                     if applyDraft() { dismiss() }
@@ -159,29 +190,14 @@ struct SettingsView: View {
                 Button("변경한 글 버리고 닫기", role: .destructive) { dismiss() }
                 Button("계속 편집") { confirmingClose = false }
             }
-            .fileImporter(isPresented: $importing, allowedContentTypes: [.plainText]) { result in
+            .fileImporter(isPresented: $importing, allowedContentTypes: importFormat == .plain
+                ? [.plainText] : [UTType(filenameExtension: "md") ?? .plainText, .plainText]) { result in
                 do {
                     let url = try result.get()
-                    let accessed = url.startAccessingSecurityScopedResource()
-                    defer { if accessed { url.stopAccessingSecurityScopedResource() } }
-                    let size = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
-                    guard size <= 800_004 else {
-                        importError = "파일이 너무 커. 최대 200,000 UTF-16 문자의 TXT 파일을 선택해줘."
-                        return
-                    }
-                    let data = try Data(contentsOf: url)
-                    guard let text = String(data: data, encoding: .utf8)
-                        ?? String(data: data, encoding: .utf16) else {
-                        importError = "UTF-8 또는 UTF-16 형식의 TXT 파일을 선택해줘."
-                        return
-                    }
-                    guard text.utf16.count <= 200_000 else {
-                        importError = "글이 너무 길어. 최대 200,000 UTF-16 문자까지 지원하며 글은 자르지 않았어."
-                        return
-                    }
-                    draft = text
+                    draft = try SourceIngestion.read(url: url)
+                    draftFormat = importFormat
                 } catch {
-                    importError = "파일을 읽지 못했어. 파일을 다운로드했는지 확인하고 다시 선택해줘."
+                    importError = "파일을 읽지 못했어. UTF-8 또는 UTF-16 파일인지, 다운로드됐는지 확인해줘."
                 }
             }
             .alert("글 적용 및 불러오기", isPresented: Binding(
@@ -196,13 +212,11 @@ struct SettingsView: View {
         .preferredColorScheme(.light)
     }
 
+    private var isDirty: Bool { draft != store.text || draftFormat != store.sourceFormat }
+
     @discardableResult
     private func applyDraft() -> Bool {
-        guard draft.utf16.count <= 200_000 else {
-            importError = "글이 너무 길어. 최대 200,000 UTF-16 문자까지 지원하며 글은 자르지 않았어."
-            return false
-        }
-        store.updateText(draft)
+        store.updateText(draft, format: draftFormat)
         applied = true
         return true
     }
