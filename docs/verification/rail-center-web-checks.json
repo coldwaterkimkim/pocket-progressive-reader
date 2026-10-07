@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-07",
+  "engine": "live Chromium",
+  "checks": 120,
+  "viewportWidths": [
+    284,
+    320,
+    480
+  ],
+  "previewScale": [
+    1,
+    0.65
+  ],
+  "format": [
+    "plain",
+    "markdown"
+  ],
+  "firstLastAndReverseIncluded": true,
+  "maxVisualCenterErrorPixels": 0.4453125,
+  "allFiveStylesAndSplitInlineToken": {
+    "checks": 25,
+    "maxVisualCenterErrorPixels": 0.3203125
+  },
+  "blackBackground": "rgb(0, 0, 0)",
+  "whiteText": "rgb(255, 255, 255)",
+  "verticalFullBehaviorUnchanged": true,
+  "rounding": "scroll offset quantization below half a visual pixel"
+}

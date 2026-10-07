@@ -1,3 +1,13 @@
+# Black focus and centered Horizontal Rail — 2026-10-07
+
+- Restored black token background / white glyphs in native chunks, Full/horizontal rich rendering and web Canvas. Settings label is `검은 배경`; stored `highContrast` values remain compatible. No glyph-width changes.
+- Horizontal Rail now snaps the selected token's visual center to the viewport center on every navigation change, including first/last tokens via end spacers. While fine focus is active, direct panning is disabled. Vertical Full retains nearest-edge scrolling.
+- Live Chromium: 120 forward/reverse checks across three widths, two preview scales and plain/Markdown, maximum visual center error 0.4453125px (scroll-offset pixel rounding). A further 25 checks cover all five styles and a token split across inline Markdown spans, maximum error 0.3203125px. Black/white computed colors and unchanged vertical behavior confirmed. `rail-center-web-checks.json` records results.
+- Web fixture tests passed. Relevant native Full/Horizontal UI flow passed after black-color restoration and again after centered rail changes. Final result: `test_sim_2026-10-07T14-29-53-274Z_pid93255_125be0a7.xcresult`. Both Full black-focus and centered-rail screenshots were exported and visually inspected (`black-focus-native-full.png`, `rail-center-native.png`). This is a focused UI rerun, not a new complete suite run.
+- Final signed Release build succeeded; installed and launched on iPhone 13 mini. Physical tactile/reading benefit still needs owner hands-on testing. Temporary browser/server stopped.
+
+---
+
 # Whole-document and viewport verification — 2026-10-07
 
 Current behavior is defined by FULL_DOCUMENT_REVISION.md; older evidence below is historical.

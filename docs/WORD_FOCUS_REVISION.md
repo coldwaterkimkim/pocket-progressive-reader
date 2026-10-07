@@ -22,7 +22,7 @@ Retired alignment settings are absent from current model/UI/geometry/serializati
 
 ## Five visual conditions
 
-Yellow background, text color, underline, dim others and bold/high contrast are selectable in Settings. All use the same regular-font shaped line, fixed baseline and token rectangles. Native rendering uses CoreText in a Canvas, drawing the full line once and clipping color overlays to the selected token. High contrast uses a dark background and white glyphs. Web bold uses a clipped stroke on the same font. Neither changes glyph widths or chunks. Dim others uses approximately 25–28% opacity while retaining every current token.
+Yellow background, text color, underline, dim others and black background / white text are selectable in Settings. All use the same regular-font shaped line, fixed baseline and token rectangles. Native rendering uses CoreText in a Canvas, drawing the full line once and clipping color overlays to the selected token. High contrast uses a dark background and white glyphs. Web and full/horizontal rich rendering also use a black token background with white glyphs; the earlier clipped-stroke variant was retired after owner feedback. Neither changes glyph widths or chunks. Dim others uses approximately 25–28% opacity while retaining every current token.
 
 The full panel-pixel layer is scaled for phone previews, preserving measured font metrics. Oversized indivisible eojeol still use the previous smaller-font exception; extremely long unbroken tokens may become too small to read comfortably.
 
