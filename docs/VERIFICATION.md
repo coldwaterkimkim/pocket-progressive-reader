@@ -2,7 +2,7 @@
 
 The single line is now vertically centered as well as horizontally focus-centered. A non-shrinking document strip preserves inline Markdown structure. Automatic WebKit text enlargement is disabled so the configured font size remains unchanged.
 
-Live Chromium checked four viewport heights (76/120/200/240) with plain text and Markdown: 32 token positions, vertical strip center error 0px and horizontal error below 0.5px. Web fixture checks pass. The relevant native Full/Horizontal UI test passed after the final text-size correction (`test_sim_2026-10-07T14-37-00-970Z_pid93255_a04f4570.xcresult`); the exported `rail-center-native.png` was visually inspected. Final signed Release build, iPhone 13 mini installation and launch succeeded. Temporary browser/server stopped.
+Live Chromium checked four viewport heights (76/120/200/240) with plain text and Markdown: 32 token positions, vertical strip center error 0px and horizontal error below 0.5px. Web fixture checks pass. The relevant native Full/Horizontal UI test passed after the final text-size correction (`test_sim_2026-10-07T14-37-00-970Z_pid93255_a04f4570.xcresult`); the exported `rail-center-native.png` was visually inspected. Final signed Release build and iPhone 13 mini installation succeeded. Final automatic launch was blocked because the phone was locked (CoreDevice 10002 / FBS Locked); the owner can open the installed app after unlocking. Temporary browser/server stopped.
 
 ---
 
