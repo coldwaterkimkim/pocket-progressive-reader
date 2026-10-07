@@ -13,6 +13,13 @@
 /* End spacers let even the first/last token snap to the viewport center. */
 #reader-document.horizontal::before,#reader-document.horizontal::after{content:"";display:inline-block;width:50%;height:1px}
 #reader-document.horizontal.has-focus{overflow-x:hidden}
+
+/* Center the single rail vertically without changing its text metrics. */
+#reader-document.horizontal{display:flex;align-items:center}
+#reader-document.horizontal::before,#reader-document.horizontal::after{flex:0 0 50%}
+#reader-document.horizontal .rail-strip{display:block;flex:none;white-space:nowrap;line-height:inherit}
+
+#reader-document{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 </style></head><body>
 <div class="app"><aside class="lab">
 <h1>Pocket Progressive Reader</h1><div class="sub">Hardware + UX decision lab · v4 · manual word focus / visual-width experiment</div>

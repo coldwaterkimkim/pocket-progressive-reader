@@ -24,5 +24,20 @@
   "blackBackground": "rgb(0, 0, 0)",
   "whiteText": "rgb(255, 255, 255)",
   "verticalFullBehaviorUnchanged": true,
-  "rounding": "scroll offset quantization below half a visual pixel"
+  "rounding": "scroll offset quantization below half a visual pixel",
+  "verticalCenterUpdate": {
+    "heights": [
+      76,
+      120,
+      200,
+      240
+    ],
+    "formats": [
+      "plain",
+      "markdown"
+    ],
+    "checks": 32,
+    "maxRailVerticalErrorPixels": 0,
+    "maxHorizontalErrorPixels": 0.484375
+  }
 }

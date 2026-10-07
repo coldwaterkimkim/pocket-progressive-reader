@@ -72,7 +72,17 @@
       first.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
     }
   }
-  function setHorizontal(value) { if (root) root.classList.toggle('horizontal', !!value); }
+  function setHorizontal(value) {
+    if (!root) return;
+    root.classList.toggle('horizontal', !!value);
+    const existing = root.querySelector(':scope > .rail-strip');
+    if (value && !existing) {
+      const strip = document.createElement('div'); strip.className = 'rail-strip';
+      strip.append(...root.childNodes); root.append(strip);
+    } else if (!value && existing) {
+      existing.replaceWith(...existing.childNodes);
+    }
+  }
   function mount(payload) {
     root = document.getElementById('reader-document'); if (!root) throw new Error('Missing reader-document'); active = null;
     const source = String(payload.source || '');
