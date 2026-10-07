@@ -9,3 +9,6 @@ xcuserdata/
 *.env
 Local.xcconfig
 test-results/
+
+.playwright-cli/
+output/playwright/

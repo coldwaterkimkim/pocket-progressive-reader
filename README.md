@@ -19,7 +19,7 @@ No backend, account, analytics, remote API, or external runtime dependency.
 
 Open the app and read immediately. Tap the wheel left/right for chunks, up/down for adjacent sentence starts, or drag clockwise/counterclockwise on the ring to scrub at 15° detents. The center is intentionally inert. The gear opens a plain utility settings sheet.
 
-Settings accept pasted text or a TXT file, three display modes and three segmentation modes, six panel references, font/spacing/history adjustments and optional progress/haptics. Text draft changes require Apply. Reading position and settings persist locally. Reading keeps the screen awake; opening settings or leaving the app restores normal idle behavior.
+Settings accept pasted plain text/Markdown or TXT/MD files through a fixed-height source editor, three display modes and three segmentation modes, six panel references, font/spacing/history adjustments and optional progress/haptics. Text draft changes require Apply. Current Only is vertically centered; both Typewriter modes keep the current line near the bottom. Choose left alignment or a fixed first-eojeol ink-center anchor (20–50%, default 33%). Reading position and settings persist locally. Reading keeps the screen awake; opening settings or leaving the app restores normal idle behavior.
 
 The default is a fit preview. Enable actual-size mode and match its 50mm ruler with a physical ruler to approximate panel dimensions. A panel too wide for the phone is explicitly marked as scaled. No eye tracking or comprehension claims are implied.
 
@@ -33,11 +33,11 @@ xcodebuild -project PocketReader.xcodeproj -scheme PocketReader \
   -parallel-testing-enabled NO test
 ```
 
-See [implementation decisions](docs/IMPLEMENTATION.md) and [verification](docs/VERIFICATION.md). Tests use an isolated sample and temporary storage, never real reading data.
+See the [latest reading revision](docs/READING_REVISION.md), [implementation decisions](docs/IMPLEMENTATION.md) and [verification](docs/VERIFICATION.md). Tests use an isolated sample and temporary storage, never real reading data.
 
-![Actual iPhone 17 simulator home](docs/verification/home-iphone17.png)
+![Revised Current Only with gaze anchor — actual simulator](docs/verification/revision-current-anchor.png)
 
-Ten engine/store tests and seven UI flows passed across focused runs; unsigned Release device compilation passed. See verification for what remains untested on physical hardware.
+See verification for the latest test counts and what remains untested on physical hardware. The standalone v4 lab also supports the revised reading experiment; run its engine checks with `node tests/web-reader.test.mjs`.
 
 ## Physical iPhone installation
 

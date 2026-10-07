@@ -7,7 +7,7 @@
     "Past-only Typewriter",
     "Sentence-bounded Typewriter"
   ],
-  "focus_policy": "bottom-fixed current reveal unit",
+  "focus_policy": "Current Only vertically centered; both Typewriter modes bottom-fixed",
   "future_content": "hidden",
   "preferred_segmentation_default": "Visual balanced",
   "hardware_direction": {
@@ -17,7 +17,7 @@
     "connectivity_mvp": "USB-C required",
     "wireless": "later / optional"
   },
-  "next_preferred_step": "test the native iPhone prototype before purchasing hardware",
+  "next_preferred_step": "hands-on comparison of centered current, bottom history, left alignment and gaze anchor before hardware purchase",
   "native_app": "PocketReader/",
   "desktop_reference": "pocket_progressive_reader_hardware_lab_v4.html",
   "presentation_structure": [
@@ -33,6 +33,34 @@
     "installed": true,
     "launched": true,
     "running_process_confirmed": true,
-    "hands_on_checks": "pending"
+    "hands_on_checks": "pending",
+    "scope": "2026-10-03 build only; revised build device install pending"
+  },
+  "alignment_modes": [
+    "Left aligned",
+    "Fixed gaze anchor: first eojeol ink center"
+  ],
+  "gaze_anchor": {
+    "default_usable_width_fraction": 0.33,
+    "range": [
+      0.2,
+      0.5
+    ]
+  },
+  "input_formats": [
+    "paste plain/Markdown",
+    "TXT",
+    "MD"
+  ],
+  "reading_revision_date": "2026-10-07",
+  "revision_validation": {
+    "date": "2026-10-07",
+    "unit_tests_passed": 23,
+    "distinct_ui_flows_passed": 10,
+    "test_scope": "focused simulator runs; final render checked",
+    "web_live_geometry_combinations": 63,
+    "web_live_units_checked": 2311,
+    "signed_release_build": "passed",
+    "physical_device_install": "pending connection"
   }
 }
