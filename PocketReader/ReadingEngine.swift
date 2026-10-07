@@ -2,104 +2,101 @@ import Foundation
 import NaturalLanguage
 import UIKit
 
-/// Segmentation uses the same native font and panel-pixel coordinate system as the display.
-/// Source ranges always refer to the untouched imported text, including Unicode UTF-16 offsets.
+/// Eojeol atoms and normalized UTF-16 source offsets; no semantic/syntactic parsing.
 enum ReadingEngine {
-    static func font(_ settings: ReaderSettings) -> UIFont {
-        UIFont.systemFont(ofSize: max(1, settings.fontSize))
-    }
+    static func font(_ settings: ReaderSettings) -> UIFont { UIFont.systemFont(ofSize: max(1, settings.fontSize)) }
     static func width(_ text: String, settings: ReaderSettings) -> Double {
-        Double((text as NSString).size(withAttributes: [.font: font(settings)]).width)
+        NativeTextMetrics.measure(text, font: font(settings)).width
     }
-    static func usableWidth(_ settings: ReaderSettings) -> Double {
-        max(1, settings.panel.pixels.width - 2 * settings.padding)
-    }
+    static func usableWidth(_ settings: ReaderSettings) -> Double { max(1, settings.panel.pixels.width - 2 * settings.padding) }
     static func capacity(_ settings: ReaderSettings) -> Int {
         let line = Double(font(settings).lineHeight) + max(0, settings.lineGap)
         return max(0, Int(floor(max(0, settings.panel.pixels.height - 2 * settings.padding - 8) / line)) - 1)
     }
-
-    private struct Atom {
-        let text: String
-        let range: NSRange
-    }
-    static func build(text: String, settings: ReaderSettings) -> [ReadingUnit] {
-        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return [] }
+    struct SentenceSpan { let range: NSRange }
+    static func sentences(in document: SourceDocument) -> [SentenceSpan] {
+        let text = document.normalizedText
+        guard !text.isEmpty else { return [] }
         let tokenizer = NLTokenizer(unit: .sentence)
         tokenizer.string = text
-        let source = text as NSString
-        let regex = try! NSRegularExpression(pattern: "\\S+")
-        var result: [ReadingUnit] = []
-        var sentence = 0
-        tokenizer.enumerateTokens(in: text.startIndex..<text.endIndex) { range, _ in
-            let sentenceRange = NSRange(range, in: text)
-            let raw = regex.matches(in: text, range: sentenceRange).map {
-                Atom(text: source.substring(with: $0.range), range: $0.range)
+        var spans: [SentenceSpan] = []
+        // Blocks constrain sentence tokenization: heading/list/quote boundaries cannot merge.
+        for block in document.blocks {
+            guard let range = Range(block, in: text) else { continue }
+            tokenizer.enumerateTokens(in: range) { token, _ in
+                spans.append(SentenceSpan(range: NSRange(token, in: text))); return true
             }
-            guard !raw.isEmpty else { return true }
-            let maxWidth = usableWidth(settings)
-            let makeUnit: ([Atom]) -> ReadingUnit = { group in
-                let first = group.first!, last = group.last!
-                let span = NSRange(location: first.range.location, length: NSMaxRange(last.range) - first.range.location)
-                let displayed = join(group[...])
-                return ReadingUnit(text: displayed, sentenceIndex: sentence, sourceRange: span, width: width(displayed, settings: settings))
+        }
+        return spans
+    }
+    private struct Atom { let text: String; let range: NSRange; let width: Double; let center: Double; let inkLeft: Double }
+    static func build(text: String, settings: ReaderSettings) -> [ReadingUnit] {
+        build(document: SourceDocument(source: text, format: .plain), settings: settings)
+    }
+    static func build(document: SourceDocument, settings: ReaderSettings) -> [ReadingUnit] {
+        let source = document.normalizedText as NSString
+        let regex = try! NSRegularExpression(pattern: "\\S+")
+        let nativeFont = font(settings)
+        var result: [ReadingUnit] = []
+        for (sentenceIndex, sentence) in sentences(in: document).enumerated() {
+            let atoms = regex.matches(in: document.normalizedText, range: sentence.range).map { match -> Atom in
+                let text = source.substring(with: match.range)
+                let metrics = NativeTextMetrics.measure(text, font: nativeFont)
+                return Atom(text: text, range: match.range, width: metrics.width, center: metrics.inkCenter, inkLeft: metrics.inkLeft)
             }
             let groups: [[Atom]]
             switch settings.segmentation {
-            case .eojeol:
-                // Original 3–5 eojeol scoring (12/6 punctuation bonuses), then visual refit.
-                groups = eojeol(raw).flatMap { greedy($0.flatMap { split($0, maxWidth: maxWidth, settings: settings) }, maxWidth: maxWidth, settings: settings) }
-            case .greedy:
-                groups = greedy(raw.flatMap { split($0, maxWidth: maxWidth, settings: settings) }, maxWidth: maxWidth, settings: settings)
-            case .balanced:
-                groups = balanced(raw.flatMap { split($0, maxWidth: maxWidth, settings: settings) }, maxWidth: maxWidth, settings: settings)
+            case .balanced: groups = balanced(atoms, settings: settings, font: nativeFont)
+            case .greedy: groups = greedy(atoms, settings: settings, font: nativeFont)
+            case .eojeol: groups = eojeol(atoms).flatMap { greedy($0, settings: settings, font: nativeFont) }
             }
-            result.append(contentsOf: groups.map(makeUnit))
-            sentence += 1
-            return true
+            for group in groups {
+                guard let first = group.first, let last = group.last else { continue }
+                let text = join(group[...])
+                let scale = group.count == 1 ? fittingSingleScale(first, settings: settings) : 1
+                // Measure with the exact font ultimately used for rendering, including fallback shrink.
+                let renderedFont = UIFont.systemFont(ofSize: settings.fontSize * scale)
+                let metrics = NativeTextMetrics.measure(text, font: renderedFont)
+                let firstMetrics = NativeTextMetrics.measure(first.text, font: renderedFont)
+                result.append(ReadingUnit(text: text, sentenceIndex: sentenceIndex,
+                    sourceRange: NSRange(location: first.range.location, length: NSMaxRange(last.range) - first.range.location),
+                    width: metrics.width, firstEojeolWidth: firstMetrics.width, firstEojeolCenter: firstMetrics.inkCenter, inkLeft: metrics.inkLeft, fontScale: scale))
+            }
         }
         return result
     }
-
-    private static func join(_ atoms: ArraySlice<Atom>) -> String {
-        // Adjacent fragments of the same long token must not acquire artificial spaces.
-        var text = "", previousEnd: Int?
-        for atom in atoms {
-            if !text.isEmpty && previousEnd != atom.range.location { text += " " }
-            text += atom.text
-            previousEnd = NSMaxRange(atom.range)
+    private static func fittingSingleScale(_ atom: Atom, settings: ReaderSettings) -> Double {
+        if fits(width: atom.width, first: atom, settings: settings) { return 1 }
+        // SF optical sizing and emoji fallback are not linear with font size.
+        // Re-measure the final font instead of trusting a width-ratio approximation.
+        var low = 0.0, high = 1.0
+        for _ in 0..<32 {
+            let scale = (low + high) / 2
+            let m = NativeTextMetrics.measure(atom.text, font: UIFont.systemFont(ofSize: settings.fontSize * scale))
+            let placed = AnchorGeometry.placement(width: m.width, firstWidth: m.width, firstCenter: m.inkCenter, inkLeft: m.inkLeft, settings: settings)
+            if placed.left >= 0 && placed.right <= usableWidth(settings) { low = scale }
+            else { high = scale }
         }
-        return text
+        return low
     }
-    private static func split(_ atom: Atom, maxWidth: Double, settings: ReaderSettings) -> [Atom] {
-        guard width(atom.text, settings: settings) > maxWidth else { return [atom] }
-        var parts: [Atom] = [], fragment = "", offset = atom.range.location
-        for character in atom.text {
-            let next = fragment + String(character)
-            if !fragment.isEmpty && width(next, settings: settings) > maxWidth {
-                parts.append(Atom(text: fragment, range: NSRange(location: offset, length: fragment.utf16.count)))
-                offset += fragment.utf16.count
-                fragment = ""
-            }
-            fragment.append(character)
-        }
-        if !fragment.isEmpty { parts.append(Atom(text: fragment, range: NSRange(location: offset, length: fragment.utf16.count))) }
-        // A single grapheme wider than the lane cannot be divided without corrupting Unicode.
-        return parts
+    private static func join(_ atoms: ArraySlice<Atom>) -> String { atoms.map(\.text).joined(separator: " ") }
+    private static func measured(_ text: String, font: UIFont) -> Double { NativeTextMetrics.measure(text, font: font).width }
+    private static func fits(width: Double, first: Atom, settings: ReaderSettings) -> Bool {
+        AnchorGeometry.placement(width: width, firstWidth: first.width, firstCenter: first.center, inkLeft: first.inkLeft, settings: settings).fits(in: usableWidth(settings))
     }
-    private static func greedy(_ atoms: [Atom], maxWidth: Double, settings: ReaderSettings) -> [[Atom]] {
-        var groups: [[Atom]] = [], start = 0
+    private static func greedy(_ atoms: [Atom], settings: ReaderSettings, font: UIFont) -> [[Atom]] {
+        var groups: [[Atom]] = [], start = 0, candidate = ""
         for end in atoms.indices {
-            if end > start && width(join(atoms[start...end]), settings: settings) > maxWidth {
-                groups.append(Array(atoms[start..<end])); start = end
-            }
+            let next = candidate.isEmpty ? atoms[end].text : candidate + " " + atoms[end].text
+            if end > start && !fits(width: measured(next, font: font), first: atoms[start], settings: settings) {
+                groups.append(Array(atoms[start..<end])); start = end; candidate = atoms[end].text
+            } else { candidate = next }
         }
         if start < atoms.count { groups.append(Array(atoms[start...])) }
         return groups
     }
     private static func bonus(_ text: String, terminal: Double, intermediate: Double) -> Double {
-        let closing = CharacterSet(charactersIn: "\"'’”»》〉」』】)]}）")
-        let stripped = text.trimmingCharacters(in: closing)
+        let stripped = text.trimmingCharacters(in: CharacterSet(charactersIn: "\"'’”»》〉」』】)]}）"))
         guard let last = stripped.last else { return 0 }
         if ".!?。！？‼⁉…".contains(last) { return terminal }
         if ",，:：;；".contains(last) { return intermediate }
@@ -108,36 +105,39 @@ enum ReadingEngine {
     private static func eojeol(_ atoms: [Atom]) -> [[Atom]] {
         guard !atoms.isEmpty else { return [] }
         let n = atoms.count
-        var scores = Array(repeating: -Double.infinity, count: n + 1)
-        var ends = Array(repeating: 0, count: n)
-        scores[n] = 0
+        var costs = Array(repeating: Double.infinity, count: n + 1), ends = Array(repeating: 0, count: n)
+        costs[n] = 0
         for i in stride(from: n - 1, through: 0, by: -1) {
             for j in (i + 1)...min(n, i + 5) {
-                let text = join(atoms[i..<j]), count = j - i
-                let chars = text.filter { !$0.isWhitespace }.count
-                let desired = count == 4 ? (chars >= 30 ? 3 : chars <= 8 ? 5 : 4) : 4
-                let score = scores[j] + bonus(text, terminal: 12, intermediate: 6) - Double(abs(count - desired) * 2) - (count < 3 && n > 1 ? 30 : 0)
-                if score > scores[i] { scores[i] = score; ends[i] = j }
+                let count = j - i
+                let cost = costs[j] + Double(abs(count - 4) * 2) + (count < 3 && n > 1 ? 30 : 0) - bonus(atoms[j - 1].text, terminal: 12, intermediate: 6)
+                if cost < costs[i] { costs[i] = cost; ends[i] = j }
             }
         }
         return reconstruct(atoms, ends: ends)
     }
-    private static func balanced(_ atoms: [Atom], maxWidth: Double, settings: ReaderSettings) -> [[Atom]] {
+    private static func balanced(_ atoms: [Atom], settings: ReaderSettings, font: UIFont) -> [[Atom]] {
         guard !atoms.isEmpty else { return [] }
-        let full = width(join(atoms[...]), settings: settings)
-        if full <= maxWidth { return [atoms] }
-        let ideal = min(maxWidth * 0.92, full / max(2, ceil(full / maxWidth)))
         let n = atoms.count
-        var costs = Array(repeating: Double.infinity, count: n + 1)
-        var ends = Array(repeating: 0, count: n)
+        let full = measured(join(atoms[...]), font: font)
+        if fits(width: full, first: atoms[0], settings: settings) { return [atoms] }
+        let averageFirst = atoms.reduce(0) { $0 + min($1.width, usableWidth(settings)) } / Double(n)
+        let lane = min(usableWidth(settings), AnchorGeometry.maximumUnitWidth(firstWidth: averageFirst, settings: settings))
+        let ideal = min(lane * 0.88, full / max(2, ceil(full / lane)))
+        var costs = Array(repeating: Double.infinity, count: n + 1), ends = Array(repeating: 0, count: n)
         costs[n] = 0
         for i in stride(from: n - 1, through: 0, by: -1) {
-            // Bound lookahead so pathological text cannot trigger quadratic candidate growth.
+            var candidate = ""
+            // Bounded lookahead is a compute bound, not a document or eojeol-count rule.
             for j in (i + 1)...min(n, i + 128) {
-                let text = join(atoms[i..<j]), w = width(text, settings: settings)
-                if w > maxWidth && j > i + 1 { break }
+                candidate += (j == i + 1 ? "" : " ") + atoms[j - 1].text
+                let w = measured(candidate, font: font)
+                if !fits(width: w, first: atoms[i], settings: settings) {
+                    if j == i + 1 { costs[i] = costs[j] + 150; ends[i] = j }
+                    break
+                }
                 let deviation = (w - ideal) / max(1, ideal)
-                let cost = costs[j] + deviation * deviation * 100 + (w < ideal * 0.48 ? 24 : 0) - bonus(text, terminal: 42, intermediate: 18) + Double(max(0, j - i - 7) * 5)
+                let cost = costs[j] + 8 + deviation * deviation * 100 + (w < ideal * 0.45 ? 30 : 0) - bonus(atoms[j - 1].text, terminal: 4, intermediate: 2)
                 if cost < costs[i] { costs[i] = cost; ends[i] = j }
             }
         }

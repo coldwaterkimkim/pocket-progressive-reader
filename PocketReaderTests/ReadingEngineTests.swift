@@ -16,14 +16,15 @@ final class ReadingEngineTests: XCTestCase {
             }
         }
     }
-    func testLongUnicodeTokensPreserveGraphemesAndSourceRanges() {
+    func testLongUnicodeEojeolRemainsAtomicAndFits() {
         let text = String(repeating: "가족👨‍👩‍👧‍👦é", count: 35)
         for mode in SegmentationMode.allCases {
             var settings = ReaderSettings()
             settings.segmentation = mode
             settings.panel = .bar225
             let units = ReadingEngine.build(text: text, settings: settings)
-            XCTAssertGreaterThan(units.count, 1)
+            XCTAssertEqual(units.count, 1)
+            XCTAssertLessThan(units[0].fontScale, 1)
             XCTAssertEqual(units.map(\.text).joined(), text)
             var offset = 0
             for unit in units {
@@ -39,6 +40,49 @@ final class ReadingEngineTests: XCTestCase {
         XCTAssertTrue(ReadingEngine.build(text: " \n\t", settings: ReaderSettings()).isEmpty)
         let units = ReadingEngine.build(text: "  첫째\t내용.\n\n둘째   내용.  ", settings: ReaderSettings())
         XCTAssertEqual(compact(units.map(\.text).joined()), "첫째내용.둘째내용.")
+    }
+    func testAnchorCenterAndBoundsAcrossPanelsModesAndAnchorRange() {
+        let text = "가나다라마바사아자차카타파하 아주 짧은 글, 그리고 다양한 어절의 길이를 비교한다. English extraordinarilylongword and 한글👨‍👩‍👧‍👦도 유지한다."
+        for panel in PanelPreset.allCases {
+            for mode in SegmentationMode.allCases {
+                for anchor in [0.2, 0.33, 0.5] {
+                    for size in [10.0, 26.0, 34.0] {
+                        var settings = ReaderSettings()
+                        settings.panel = panel; settings.segmentation = mode
+                        settings.alignment = .gazeAnchor; settings.anchorFraction = anchor; settings.fontSize = size
+                        let units = ReadingEngine.build(text: text, settings: settings)
+                        XCTAssertEqual(compact(units.map(\.text).joined()), compact(text))
+                        for unit in units {
+                            let geometry = AnchorGeometry.placement(width: unit.width, firstWidth: unit.firstEojeolWidth, firstCenter: unit.firstEojeolCenter, inkLeft: unit.inkLeft, settings: settings)
+                            XCTAssertTrue(geometry.fits(in: ReadingEngine.usableWidth(settings)), "\(panel) \(mode) \(anchor): \(unit.text)")
+                            XCTAssertEqual(geometry.origin + unit.firstEojeolCenter, ReadingEngine.usableWidth(settings) * anchor, accuracy: 0.001)
+                            XCTAssertFalse(unit.text.contains("\n"))
+                        }
+                    }
+                }
+            }
+        }
+    }
+    func testCurrentOnlyCenteredAndTypewriterBaselineStable() {
+        for panel in PanelPreset.allCases {
+            var settings = ReaderSettings(); settings.panel = panel
+            settings.presentation = .current
+            let line = Double(ReadingEngine.font(settings).lineHeight)
+            XCTAssertEqual(PresentationGeometry.currentTop(settings: settings) + line / 2, panel.pixels.height / 2, accuracy: 0.001)
+            settings.presentation = .past
+            let top = PresentationGeometry.currentTop(settings: settings)
+            settings.showProgress.toggle()
+            XCTAssertEqual(PresentationGeometry.currentTop(settings: settings), top)
+            settings.presentation = .sentence
+            XCTAssertEqual(PresentationGeometry.currentTop(settings: settings), top)
+        }
+    }
+    func testLargeDocumentHasNoApplicationSizeRejection() {
+        let text = String(repeating: "문서의 내용을 천천히 읽는다.\n\n", count: 12_000)
+        XCTAssertGreaterThan(text.utf16.count, 200_000)
+        let units = ReadingEngine.build(text: text, settings: ReaderSettings())
+        XCTAssertEqual(compact(units.map(\.text).joined()), compact(text))
+        XCTAssertGreaterThanOrEqual(units.count, 12_000)
     }
     private func compact(_ value: String) -> String { value.filter { !$0.isWhitespace } }
 }
@@ -137,6 +181,35 @@ final class ReaderStoreTests: XCTestCase {
         let restored = ReaderStore(persistenceURL: url)
         XCTAssertEqual(restored.current, store.current)
         XCTAssertEqual(restored.index, 2)
+    }
+    func testOldSavedSettingsMigrateWithoutLosingTextOrPosition() throws {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let original = ReaderStore(persistenceURL: url)
+        original.move(2); original.save()
+        var json = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [String: Any]
+        var settings = json["settings"] as! [String: Any]
+        settings.removeValue(forKey: "alignment"); settings.removeValue(forKey: "anchorFraction")
+        json["settings"] = settings; json.removeValue(forKey: "sourceFormat")
+        try JSONSerialization.data(withJSONObject: json).write(to: url)
+        let restored = ReaderStore(persistenceURL: url)
+        XCTAssertNil(restored.persistenceError)
+        XCTAssertEqual(restored.text, original.text)
+        XCTAssertEqual(restored.current, original.current)
+        XCTAssertEqual(restored.settings.anchorFraction, 0.33)
+    }
+    func testMarkdownSourceFormatAndNormalizedPositionPersist() throws {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let store = ReaderStore(persistenceURL: url)
+        store.updateText("## 제목\n\n- **첫 항목**\n- [둘째](https://example.com)", format: .markdown)
+        store.move(1); store.save()
+        let restored = ReaderStore(persistenceURL: url)
+        XCTAssertEqual(restored.sourceFormat, .markdown)
+        XCTAssertEqual(restored.text, store.text)
+        XCTAssertEqual(restored.current, store.current)
+        XCTAssertFalse(restored.units.map(\.text).joined().contains("https"))
+        XCTAssertEqual(Set(restored.units.map(\.sentenceIndex)).count, 3)
     }
     func testSampleModeNeverWritesPersistence() {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

@@ -59,9 +59,17 @@ enum PanelPreset: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+enum AlignmentMode: String, Codable, CaseIterable, Identifiable {
+    case left, gazeAnchor
+    var id: String { rawValue }
+    var title: String { self == .left ? "왼쪽 정렬" : "고정 시선 앵커" }
+}
+
 struct ReaderSettings: Codable, Equatable {
     var presentation: PresentationMode = .past
     var segmentation: SegmentationMode = .balanced
+    var alignment: AlignmentMode = .left
+    var anchorFraction: Double = 0.33
     var panel: PanelPreset = .bar223
     var fontSize: Double = 26
     var lineGap: Double = 6
@@ -74,11 +82,38 @@ struct ReaderSettings: Codable, Equatable {
     var haptics: Bool = false
 }
 
+extension ReaderSettings {
+    private enum CodingKeys: String, CodingKey {
+        case presentation, segmentation, alignment, anchorFraction, panel, fontSize, lineGap, padding, pastLines, actualSize, pointsPerMM, showProgress, haptics
+    }
+    init(from decoder: Decoder) throws {
+        self.init()
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        presentation = try c.decodeIfPresent(PresentationMode.self, forKey: .presentation) ?? presentation
+        segmentation = try c.decodeIfPresent(SegmentationMode.self, forKey: .segmentation) ?? segmentation
+        alignment = try c.decodeIfPresent(AlignmentMode.self, forKey: .alignment) ?? alignment
+        anchorFraction = try c.decodeIfPresent(Double.self, forKey: .anchorFraction) ?? anchorFraction
+        panel = try c.decodeIfPresent(PanelPreset.self, forKey: .panel) ?? panel
+        fontSize = try c.decodeIfPresent(Double.self, forKey: .fontSize) ?? fontSize
+        lineGap = try c.decodeIfPresent(Double.self, forKey: .lineGap) ?? lineGap
+        padding = try c.decodeIfPresent(Double.self, forKey: .padding) ?? padding
+        pastLines = try c.decodeIfPresent(Int.self, forKey: .pastLines) ?? pastLines
+        actualSize = try c.decodeIfPresent(Bool.self, forKey: .actualSize) ?? actualSize
+        pointsPerMM = try c.decodeIfPresent(Double.self, forKey: .pointsPerMM) ?? pointsPerMM
+        showProgress = try c.decodeIfPresent(Bool.self, forKey: .showProgress) ?? showProgress
+        haptics = try c.decodeIfPresent(Bool.self, forKey: .haptics) ?? haptics
+    }
+}
+
 struct ReadingUnit: Identifiable, Equatable {
     let text: String
     let sentenceIndex: Int
     let sourceRange: NSRange
     let width: Double
+    let firstEojeolWidth: Double
+    let firstEojeolCenter: Double
+    let inkLeft: Double
+    let fontScale: Double
     var id: Int { sourceRange.location }
 }
 

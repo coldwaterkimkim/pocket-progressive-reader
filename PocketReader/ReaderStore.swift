@@ -4,6 +4,8 @@ import Observation
 @MainActor @Observable
 final class ReaderStore {
     var text: String
+    private(set) var sourceFormat: SourceFormat = .plain
+    private(set) var document = SourceDocument(source: "", format: .plain)
     var settings: ReaderSettings
     private(set) var units: [ReadingUnit] = []
     private(set) var index = 0
@@ -33,6 +35,7 @@ final class ReaderStore {
         let text: String
         let settings: ReaderSettings
         let sourceOffset: Int
+        var sourceFormat: SourceFormat? = nil
     }
     init(persistenceURL: URL? = ReaderStore.defaultPersistenceURL, sample: Bool = false) {
         self.persistenceURL = sample ? nil : persistenceURL
@@ -47,15 +50,18 @@ final class ReaderStore {
                       (0...18).contains(snapshot.settings.lineGap),
                       (2...30).contains(snapshot.settings.padding),
                       (0...6).contains(snapshot.settings.pastLines),
-                      (3...8).contains(snapshot.settings.pointsPerMM) else {
+                      (3...8).contains(snapshot.settings.pointsPerMM),
+                      (0.2...0.5).contains(snapshot.settings.anchorFraction) else {
                     throw CocoaError(.fileReadCorruptFile)
                 }
                 text = snapshot.text
+                sourceFormat = snapshot.sourceFormat ?? .plain
                 settings = snapshot.settings
                 offset = max(0, snapshot.sourceOffset)
             } catch { persistenceError = "저장된 읽기 상태를 불러오지 못했어. 새로 읽기를 시작할 수 있어." }
         }
-        units = ReadingEngine.build(text: text, settings: settings)
+        document = SourceDocument(source: text, format: sourceFormat)
+        units = ReadingEngine.build(document: document, settings: settings)
         index = restoredIndex(offset)
     }
     private func restoredIndex(_ offset: Int) -> Int {
@@ -65,13 +71,15 @@ final class ReaderStore {
     }
     func rebuild() {
         let offset = current?.sourceRange.location ?? 0
-        units = ReadingEngine.build(text: text, settings: settings)
+        units = ReadingEngine.build(document: document, settings: settings)
         index = restoredIndex(offset)
         save()
     }
-    func updateText(_ text: String) {
+    func updateText(_ text: String, format: SourceFormat = .plain) {
         self.text = text
-        units = ReadingEngine.build(text: text, settings: settings)
+        sourceFormat = format
+        document = SourceDocument(source: text, format: format)
+        units = ReadingEngine.build(document: document, settings: settings)
         index = 0
         save()
     }
@@ -107,7 +115,7 @@ final class ReaderStore {
         guard let url = persistenceURL else { return }
         do {
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-            let snapshot = Snapshot(text: text, settings: settings, sourceOffset: current?.sourceRange.location ?? 0)
+            let snapshot = Snapshot(text: text, settings: settings, sourceOffset: current?.sourceRange.location ?? 0, sourceFormat: sourceFormat)
             try JSONEncoder().encode(snapshot).write(to: url, options: .atomic)
             persistenceError = nil
         } catch { persistenceError = "읽던 위치를 저장하지 못했어. 저장 공간을 확인해줘." }
