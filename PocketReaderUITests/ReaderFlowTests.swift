@@ -344,6 +344,59 @@ final class ReaderFlowTests: XCTestCase {
         add(rail)
     }
 
+    func testAdaptiveFocusGroupingAcrossChunkMarkdownAndRail() {
+        openSettings()
+        replaceDraft(with: "오늘이 어제보다 더 많이 배고프다.")
+        app.buttons["settings.applyText"].tap()
+        choose("settings.minimumFocusLength", title: "3자")
+        choose("settings.wordFocusStyle", title: "검은 배경")
+        closeSettings()
+        let wheel = element("wheel"), frame = current.frame
+        for _ in 0..<3 { rotateOneDetent(clockwise: true) }
+        XCTAssertEqual(wheel.value as? String, "더 많이")
+        assertFrame(current.frame, equals: frame)
+        rotateOneDetent(clockwise: false)
+        XCTAssertEqual(wheel.value as? String, "어제보다")
+        rotateOneDetent(clockwise: true)
+        XCTAssertEqual(wheel.value as? String, "더 많이")
+        for style in ["노란 배경", "글자 색상", "밑줄", "다른 어절 흐리게", "검은 배경"] {
+            openSettings(); choose("settings.wordFocusStyle", title: style); closeSettings()
+            XCTAssertEqual(wheel.value as? String, "더 많이")
+            assertFrame(current.frame, equals: frame)
+        }
+        let chunk = XCTAttachment(screenshot: app.screenshot())
+        chunk.name = "Adaptive group coherent native highlight"
+        chunk.lifetime = .keepAlways; add(chunk)
+        openSettings(); choose("settings.minimumFocusLength", title: "1자 · 기존 어절"); closeSettings()
+        XCTAssertEqual(wheel.value as? String, "더")
+        rotateOneDetent(clockwise: true)
+        XCTAssertEqual(wheel.value as? String, "많이")
+        openSettings()
+        choose("settings.sourceFormat", title: "Markdown")
+        replaceDraft(with: "# 테스트\n\n오늘이 어제보다 더 **많이** 배고프다.")
+        app.buttons["settings.applyText"].tap()
+        choose("settings.segmentation", title: "Full · 전체 본문")
+        choose("settings.minimumFocusLength", title: "3자")
+        closeSettings()
+        XCTAssertTrue(element("reader.document").waitForExistence(timeout: 8))
+        for _ in 0..<4 { rotateOneDetent(clockwise: true) }
+        XCTAssertEqual(wheel.value as? String, "더 많이")
+        openSettings(); choose("settings.presentation", title: "한 줄 가로 스크롤"); closeSettings()
+        for _ in 0..<4 { rotateOneDetent(clockwise: true) }
+        XCTAssertEqual(wheel.value as? String, "더 많이")
+        let rail = XCTAttachment(screenshot: app.screenshot())
+        rail.name = "Adaptive group centered across Markdown runs"
+        rail.lifetime = .keepAlways; add(rail)
+    }
+
+    private func rotateOneDetent(clockwise: Bool) {
+        let wheel = element("wheel")
+        let top = wheel.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.12))
+        let next = wheel.coordinate(withNormalizedOffset: CGVector(dx: 0.63, dy: 0.143))
+        if clockwise { top.press(forDuration: 0.3, thenDragTo: next) }
+        else { next.press(forDuration: 0.3, thenDragTo: top) }
+    }
+
     func testContextMarginSettingsAndStableForwardBackwardWindow() {
         openSettings()
         replaceDraft(with: (0..<24).map { "줄\($0)." }.joined(separator: " "))

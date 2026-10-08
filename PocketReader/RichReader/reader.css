@@ -6,10 +6,10 @@ p{margin:.45em 0}h1,h2,h3,h4,h5,h6{line-height:1.25;margin:.5em 0}h1{font-size:1
 .horizontal p,.horizontal div,.horizontal h1,.horizontal h2,.horizontal h3,.horizontal h4,.horizontal h5,.horizontal h6,.horizontal ul,.horizontal ol,.horizontal li,.horizontal blockquote,.horizontal pre,.horizontal table,.horizontal tbody,.horizontal thead,.horizontal tr,.horizontal th,.horizontal td{display:inline;white-space:nowrap;font-size:1em;line-height:inherit;margin:0;padding:0;border:0}
 .horizontal p:after,.horizontal li:after,.horizontal blockquote:after,.horizontal pre:after,.horizontal tr:after,.horizontal td:after,.horizontal th:after{content:' · ';color:#59604f}.horizontal br{display:none}.horizontal img{max-height:2em;max-width:5em;vertical-align:middle}.horizontal hr{display:inline}.horizontal hr:after{content:' — '}
 [data-token]{border-radius:2px}
-[data-focus-style=yellow] .focused{background:#f2d75f}
+
 [data-focus-style=color] .focused{color:#b33f24}
-[data-focus-style=underline] .focused{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
-[data-focus-style=highContrast] .focused{background:#000;color:#fff}
+
+[data-focus-style=highContrast] .focused{color:#fff}
 [data-focus-style=dimOthers].has-focus [data-token]{opacity:.35}
 [data-focus-style=dimOthers].has-focus .focused{opacity:1}
 
@@ -26,5 +26,13 @@ p{margin:.45em 0}h1,h2,h3,h4,h5,h6{line-height:1.25;margin:.5em 0}h1{font-size:1
 
 #reader-document{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
-[data-focus-style=yellow] .focused{box-shadow:3px 0 #f2d75f,-3px 0 #f2d75f}
-[data-focus-style=highContrast] .focused{box-shadow:3px 0 #000,-3px 0 #000}
+
+
+
+/* Paint ranges over preserved inline markup, without changing its line layout. */
+#reader-document{position:relative;isolation:isolate}
+.focus-paint-layer{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:1}
+.focus-paint-layer i{position:absolute;display:block;border-radius:2px;background:#f2d75f}
+[data-focus-style=highContrast] .focus-paint-layer i{background:#000}
+[data-token].focused{position:relative;z-index:2}
+[data-focus-style=underline] .focus-paint-layer i{background:#272a26;border-radius:0}

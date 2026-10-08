@@ -78,6 +78,7 @@ struct ReaderSettings: Codable, Equatable {
     var presentation: PresentationMode = .past
     var segmentation: SegmentationMode = .balanced
     var wordFocusStyle: WordFocusStyle = .yellow
+    var minimumFocusLength: Int = 3
     var panel: PanelPreset = .bar223
     var fontSize: Double = 26
     var lineGap: Double = 6
@@ -93,7 +94,7 @@ struct ReaderSettings: Codable, Equatable {
 
 extension ReaderSettings {
     private enum CodingKeys: String, CodingKey {
-        case presentation, segmentation, wordFocusStyle, panel, fontSize, lineGap, padding, pastLines, scrollMarginLines, actualSize, pointsPerMM, showProgress, haptics
+        case presentation, segmentation, wordFocusStyle, minimumFocusLength, panel, fontSize, lineGap, padding, pastLines, scrollMarginLines, actualSize, pointsPerMM, showProgress, haptics
     }
     init(from decoder: Decoder) throws {
         self.init()
@@ -102,6 +103,7 @@ extension ReaderSettings {
         presentation = oldPresentation.flatMap(PresentationMode.init(rawValue:)) ?? .past
         segmentation = try c.decodeIfPresent(SegmentationMode.self, forKey: .segmentation) ?? segmentation
         wordFocusStyle = try c.decodeIfPresent(WordFocusStyle.self, forKey: .wordFocusStyle) ?? wordFocusStyle
+        minimumFocusLength = min(4, max(1, try c.decodeIfPresent(Int.self, forKey: .minimumFocusLength) ?? 3))
         panel = try c.decodeIfPresent(PanelPreset.self, forKey: .panel) ?? panel
         fontSize = try c.decodeIfPresent(Double.self, forKey: .fontSize) ?? fontSize
         lineGap = try c.decodeIfPresent(Double.self, forKey: .lineGap) ?? lineGap

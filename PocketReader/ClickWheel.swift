@@ -68,7 +68,7 @@ struct ClickWheel: View {
             .accessibilityElement(children: .contain)
             .accessibilityLabel("방향 클릭휠")
             .accessibilityIdentifier("wheel")
-            .accessibilityValue(store.focusedToken?.text ?? "어절 포커스 없음")
+            .accessibilityValue(store.focusedGroupText ?? "어절 포커스 없음")
             .accessibilityAdjustableAction { direction in
                 switch direction {
                 case .increment: perform { store.moveFocus(1) }

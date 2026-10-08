@@ -105,6 +105,8 @@ final class ReaderStoreTests: XCTestCase {
     func testNavigationBoundsAndNoFutureHistoryAfterRegression() {
         let store = ReaderStore(persistenceURL: nil)
         store.settings.scrollMarginLines = 0
+        store.settings.minimumFocusLength = 1
+        store.regroupFocus()
         store.move(Int.min)
         XCTAssertEqual(store.index, 0)
         store.move(Int.max)
@@ -121,6 +123,8 @@ final class ReaderStoreTests: XCTestCase {
     func testSentenceNavigationAndHistoryReset() {
         let store = ReaderStore(persistenceURL: nil)
         store.settings.scrollMarginLines = 0
+        store.settings.minimumFocusLength = 1
+        store.regroupFocus()
         store.updateText("첫 문장에는 충분히 여러 단어가 있어서 조각을 나눌 수 있다. 두 번째 문장도 충분히 길어서 나눠진다.")
         store.settings.panel = .bar225
         store.settings.presentation = .past
@@ -141,6 +145,8 @@ final class ReaderStoreTests: XCTestCase {
     func testReflowKeepsOriginalOffsetWithDuplicateText() {
         let store = ReaderStore(persistenceURL: nil)
         store.settings.scrollMarginLines = 0
+        store.settings.minimumFocusLength = 1
+        store.regroupFocus()
         store.updateText(String(repeating: "같은 문장 같은 단어를 다시 읽는다. ", count: 20))
         store.move(store.units.count / 2)
         let offset = store.current!.sourceRange.location
@@ -237,6 +243,8 @@ final class ReaderStoreTests: XCTestCase {
     func testFineTraversalActivatesThenCrossesBothWaysWithoutSkippingTokens() {
         let store = ReaderStore(persistenceURL: nil)
         store.settings.scrollMarginLines = 0
+        store.settings.minimumFocusLength = 1
+        store.regroupFocus()
         store.settings.panel = .bar225; store.settings.fontSize = 34
         store.updateText("나는 오늘 작은 리더기를 직접 만들어 보기로 했다. 다음 문장도 천천히 읽는다.")
         XCTAssertNil(store.focusedTokenIndex)
@@ -259,6 +267,8 @@ final class ReaderStoreTests: XCTestCase {
     func testEveryCoarseActionClearsFocusIncludingBoundaryNoOp() {
         let store = ReaderStore(persistenceURL: nil)
         store.settings.scrollMarginLines = 0
+        store.settings.minimumFocusLength = 1
+        store.regroupFocus()
         store.updateText("처음 문장을 천천히 읽는다. 다음 문장을 읽는다.")
         store.moveFocus(1); store.move(-1); XCTAssertNil(store.focusedTokenIndex)
         store.moveFocus(1); store.moveSentence(-1); XCTAssertNil(store.focusedTokenIndex)
@@ -290,6 +300,8 @@ final class ReaderStoreTests: XCTestCase {
     func testCounterclockwiseKeepsViewportUntilCrossingItsTop() {
         let store = ReaderStore(persistenceURL: nil)
         store.settings.scrollMarginLines = 0
+        store.settings.minimumFocusLength = 1
+        store.regroupFocus()
         store.updateText(String(repeating: "문장을 하나씩 읽는다. ", count: 20))
         store.move(8)
         let end = store.viewportEndIndex
@@ -359,6 +371,8 @@ final class ReaderStoreTests: XCTestCase {
     func testWholeDocumentCoarseNavigationStartsAtFocusedSentence() {
         let store = ReaderStore(persistenceURL: nil)
         store.settings.scrollMarginLines = 0
+        store.settings.minimumFocusLength = 1
+        store.regroupFocus()
         store.updateText("첫 문장. 둘째 문장. 셋째 문장. 넷째 문장.")
         store.settings.segmentation = .full
         store.rebuild()

@@ -11,7 +11,22 @@ final class ReaderStore {
     private(set) var index = 0
     private(set) var focusedTokenIndex: Int?
     @ObservationIgnored private var tokenStarts: [Int] = []
-    @ObservationIgnored private var totalTokens = 0
+    private(set) var focusGroups: [[FocusGroup]] = []
+    @ObservationIgnored private var groupStarts: [Int] = []
+    @ObservationIgnored private var totalGroups = 0
+    @ObservationIgnored private var renderedHardBreaks: Set<Int> = []
+    var focusedGroup: FocusGroup? {
+        guard focusGroups.indices.contains(index), let token = focusedTokenIndex else { return nil }
+        return localGroupIndex(for: token, unitIndex: index).map { focusGroups[index][$0] }
+    }
+    var focusedGroupText: String? {
+        guard let group = focusedGroup, let current else { return nil }
+        return current.tokens[group.tokenRange].map(\.text).joined(separator: " ")
+    }
+    var globalFocusedTokenRange: Range<Int>? {
+        guard let group = focusedGroup else { return nil }
+        return (tokenStarts[index] + group.tokenStart)..<(tokenStarts[index] + group.tokenEnd)
+    }
     var focusedToken: ReadingToken? {
         guard let current, let focus = focusedTokenIndex, current.tokens.indices.contains(focus) else { return nil }
         return current.tokens[focus]
@@ -78,7 +93,10 @@ final class ReaderStore {
         self.persistenceURL = sample ? nil : persistenceURL
         text = ReaderSample.text
         settings = ReaderSettings()
-        if sample { settings.scrollMarginLines = 0 }
+        if sample {
+            settings.scrollMarginLines = 0
+            settings.minimumFocusLength = 1
+        }
         var offset = 0
         if let url = self.persistenceURL, FileManager.default.fileExists(atPath: url.path) {
             do {
@@ -125,6 +143,7 @@ final class ReaderStore {
         focusedTokenIndex = nil
         self.text = text
         sourceFormat = format
+        renderedHardBreaks = []
         document = SourceDocument(source: text, format: format)
         units = ReadingEngine.build(document: document, settings: settings)
         index = 0
@@ -180,28 +199,68 @@ final class ReaderStore {
             defer { offset += unit.tokens.count }
             return offset
         }
-        totalTokens = offset
+        regroupFocus()
     }
-    /// Encoder steps only. First step activates this unit's first/last token; thereafter
-    /// steps walk the document's token sequence. Coarse navigation deliberately clears it.
+    /// Settings changes preserve the containing token, reveal, and viewport window.
+    func regroupFocus() {
+        let sentenceOffsets = ReadingEngine.sentences(in: document).dropFirst().map { $0.range.location }
+        var groupOffset = 0
+        focusGroups = units.enumerated().map { unitIndex, unit in
+            var breaks: Set<Int> = []
+            if isWholeDocument {
+                breaks = Set(renderedHardBreaks.compactMap { global in
+                    let local = global - tokenStarts[unitIndex]
+                    return local > 0 && local < unit.tokens.count ? local : nil
+                })
+                var tokenIndex = 0
+                for sourceOffset in sentenceOffsets {
+                    while tokenIndex < unit.tokens.count && unit.tokens[tokenIndex].sourceRange.location < sourceOffset { tokenIndex += 1 }
+                    if tokenIndex > 0 && tokenIndex < unit.tokens.count { breaks.insert(tokenIndex) }
+                }
+            }
+            return FocusGrouping.build(tokens: unit.tokens, minimum: settings.minimumFocusLength, hardBreaks: breaks)
+        }
+        groupStarts = focusGroups.map { groups in
+            defer { groupOffset += groups.count }
+            return groupOffset
+        }
+        totalGroups = groupOffset
+        if let token = focusedTokenIndex, focusGroups.indices.contains(index) {
+            focusedTokenIndex = localGroupIndex(for: token, unitIndex: index).map { focusGroups[index][$0].tokenStart }
+        }
+    }
+    private func localGroupIndex(for token: Int, unitIndex: Int) -> Int? {
+        guard focusGroups.indices.contains(unitIndex), !focusGroups[unitIndex].isEmpty else { return nil }
+        let groups = focusGroups[unitIndex]
+        var low = 0, high = groups.count - 1
+        while low < high {
+            let mid = (low + high + 1) / 2
+            if groups[mid].tokenStart <= token { low = mid } else { high = mid - 1 }
+        }
+        return groups[low].tokenRange.contains(token) ? low : nil
+    }
+    /// One encoder detent walks one precomputed focus group in either direction.
     func moveFocus(_ delta: Int) {
-        guard delta != 0, let current, !current.tokens.isEmpty, totalTokens > 0 else { return }
+        guard delta != 0, let current, !current.tokens.isEmpty, totalGroups > 0 else { return }
         let base: Int, step: Int
         if let focus = focusedTokenIndex {
-            base = tokenStarts[index] + focus; step = delta
+            let local = localGroupIndex(for: focus, unitIndex: index) ?? 0
+            base = groupStarts[index] + local; step = delta
         } else {
-            base = tokenStarts[index] + (coarseTokenIndex ?? (delta > 0 ? 0 : current.tokens.count - 1))
+            let token = coarseTokenIndex ?? (delta > 0 ? 0 : current.tokens.count - 1)
+            let local = localGroupIndex(for: token, unitIndex: index) ?? 0
+            base = groupStarts[index] + local
             step = delta > 0 ? delta - 1 : delta + 1
         }
-        let target = base + min(totalTokens - 1 - base, max(-base, step))
+        let target = base + min(totalGroups - 1 - base, max(-base, step))
         let previousIndex = index
         var low = 0, high = units.count - 1
         while low < high {
             let mid = (low + high + 1) / 2
-            if tokenStarts[mid] <= target { low = mid } else { high = mid - 1 }
+            if groupStarts[mid] <= target { low = mid } else { high = mid - 1 }
         }
         index = low
-        focusedTokenIndex = target - tokenStarts[index]
+        focusedTokenIndex = focusGroups[index][target - groupStarts[index]].tokenStart
         coarseTokenIndex = nil
         if usesContextWindow {
             refreshViewport()
@@ -213,10 +272,14 @@ final class ReaderStore {
         // Fine focus is transient; only crossing a reveal changes saved reading position.
         if index != previousIndex { scheduleSave() }
     }
-    func acceptRenderedDocumentText(_ text: String) {
+    func acceptRenderedDocumentText(_ text: String, hardBreaks: [Int] = []) {
         guard isWholeDocument else { return }
         let rendered = SourceDocument(source: text, format: .plain)
-        guard rendered.normalizedText != document.normalizedText else { return }
+        renderedHardBreaks = Set(hardBreaks.filter { $0 > 0 })
+        guard rendered.normalizedText != document.normalizedText else {
+            regroupFocus()
+            return
+        }
         let offset = current?.sourceRange.location ?? 0
         document = rendered
         units = ReadingEngine.build(document: document, settings: settings)

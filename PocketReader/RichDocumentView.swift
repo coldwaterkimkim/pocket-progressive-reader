@@ -95,16 +95,16 @@ struct RichDocumentView: UIViewRepresentable {
                 }
                 return
             }
-            let selected = store.globalFocusedTokenIndex
+            let selected = store.globalFocusedTokenRange
             let coarse = store.coarseTokenIndex
             let style = store.settings.wordFocusStyle.rawValue
-            let argument = selected.map(String.init) ?? "null"
+            let argument = selected.map { "\($0.lowerBound), \($0.upperBound)" } ?? "null, null"
             let key = "\(argument)|\(coarse.map(String.init) ?? "null")|\(style)"
             guard key != lastVisualKey else { return }
             lastVisualKey = key; inFlight = true
             let scroll = selected == nil ? coarse.map { "RichReader.ensureTokenVisible(\($0));" } ?? "" : ""
             // One visual request at a time; on completion use the latest Store cursor, never a stale queue.
-            webView.evaluateJavaScript("RichReader.focus(\(argument), '\(style)');\(scroll)") { [weak self] _, _ in
+            webView.evaluateJavaScript("RichReader.focusRange(\(argument), '\(style)');\(scroll)") { [weak self] _, _ in
                 guard let self else { return }
                 self.inFlight = false; self.synchronize()
             }
@@ -113,7 +113,7 @@ struct RichDocumentView: UIViewRepresentable {
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             guard message.name == "reader", let body = message.body as? [String: Any], let text = body["text"] as? String else { return }
             // The original Markdown remains untouched; only the derived reading stream changes.
-            store.acceptRenderedDocumentText(text)
+            store.acceptRenderedDocumentText(text, hardBreaks: body["hardBreaks"] as? [Int] ?? [])
             synchronize()
         }
 

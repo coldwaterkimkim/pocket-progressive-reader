@@ -84,11 +84,17 @@ struct SettingsView: View {
                 }
 
                 Section("WORD FOCUS") {
+                    Picker("최소 포커스 길이", selection: $store.settings.minimumFocusLength) {
+                        ForEach(1...4, id: \.self) { length in
+                            Text(length == 1 ? "1자 · 기존 어절" : "\(length)자").tag(length)
+                        }
+                    }
+                    .accessibilityIdentifier("settings.minimumFocusLength")
                     Picker("강조 스타일", selection: $store.settings.wordFocusStyle) {
                         ForEach(WordFocusStyle.allCases) { style in Text(style.title).tag(style) }
                     }
                     .accessibilityIdentifier("settings.wordFocusStyle")
-                    Text("휠을 돌리면 어절 포커스가 시작돼. 방향 버튼은 조각·문장을 이동하고 포커스를 해제해.")
+                    Text("휠 한 칸은 포커스 그룹 하나를 이동해. 짧은 어절은 최대 3어절까지 묶고, 문장과 조각 경계를 넘지 않아. 1자는 기존 어절 이동이야. 방향 버튼은 포커스를 해제해.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
 

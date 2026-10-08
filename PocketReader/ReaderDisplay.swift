@@ -100,7 +100,7 @@ struct ReaderDisplay: View {
     }
 
     private func activeLine(_ unit: ReadingUnit?, y: Double) -> some View {
-        renderedLine(unit, alpha: 1, focused: store.focusedToken)
+        renderedLine(unit, alpha: 1, focused: store.focusedGroup)
             .offset(x: unit.map(lineX) ?? store.settings.padding, y: y)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(unit?.text ?? "설정에서 읽을 글을 넣어줘")
@@ -112,7 +112,7 @@ struct ReaderDisplay: View {
         store.settings.padding + max(0, -unit.inkLeft)
     }
 
-    private func renderedLine(_ unit: ReadingUnit?, alpha: Double, focused: ReadingToken?) -> some View {
+    private func renderedLine(_ unit: ReadingUnit?, alpha: Double, focused: FocusGroup?) -> some View {
         let font = UIFont.systemFont(ofSize: store.settings.fontSize * (unit?.fontScale ?? 1))
         let lineHeight = Double(ReadingEngine.font(store.settings).lineHeight)
         let text = unit?.text ?? "설정에서 읽을 글을 넣어줘"
@@ -135,8 +135,9 @@ struct ReaderDisplay: View {
                     graphics.restoreGState()
                 }
                 let ink = UIColor(white: 0.12, alpha: alpha)
-                guard let focused else { draw(ink); return }
-                let rect = CGRect(x: focused.x, y: 0, width: focused.width, height: lineHeight)
+                guard let focused, let unit else { draw(ink); return }
+                let first = unit.tokens[focused.tokenStart], last = unit.tokens[focused.tokenEnd - 1]
+                let rect = CGRect(x: first.x, y: 0, width: last.x + last.width - first.x, height: lineHeight)
                 let style = store.settings.wordFocusStyle
                 if style == .yellow {
                     graphics.setFillColor(UIColor(red: 1, green: 0.84, blue: 0.2, alpha: 0.7).cgColor)

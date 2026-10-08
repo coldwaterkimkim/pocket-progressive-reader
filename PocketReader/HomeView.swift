@@ -56,7 +56,9 @@ struct HomeView: View {
             if old.segmentation != new.segmentation || old.panel != new.panel || old.fontSize != new.fontSize
                 || old.padding != new.padding || old.presentation != new.presentation {
                 store.rebuild()
-            } else { store.refreshViewport(reset: old.scrollMarginLines != new.scrollMarginLines); store.save() }
+            } else {
+                if old.minimumFocusLength != new.minimumFocusLength { store.regroupFocus() }
+                store.refreshViewport(reset: old.scrollMarginLines != new.scrollMarginLines); store.save() }
         }
         .onChange(of: scenePhase) { _, phase in
             UIApplication.shared.isIdleTimerDisabled = phase == .active && sheet == nil
