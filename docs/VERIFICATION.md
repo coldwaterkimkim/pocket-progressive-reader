@@ -1,3 +1,17 @@
+# Adaptive Focus Grouping verification — 2026-10-08
+
+- All38 native logic tests passed: existing reveal/geometry/source/persistence/context/input tests plus six focused grouping tests. New cases cover original1-token baseline, forward/backward tail grouping, coverage/order/max3, short and punctuation-only tokens, quotes, mixed Korean/English/numbers, emoji/family/flag/decomposed graphemes, very long tokens, sentence/reveal/DOM breaks, reversible navigation and regroup-position preservation. Result: `test_sim_2026-10-08T04-24-03-585Z_pid4836_dfab8dbf.xcresult`.
+- Two relevant native UI flows passed: Adaptive Focus Grouping through chunk/Full Markdown/Horizontal Rail, and existing Context Margin behavior. The adaptive flow uses single-detent gestures, verifies `더 많이`, reverses and returns, checks all five styles without line-frame movement, switches1 at the current token, and groups across `더 **많이**` in Full and rail. Result: `test_sim_2026-10-08T04-26-44-865Z_pid4836_6dca67ec.xcresult`. This is a focused UI run, not a new complete UI-suite run.
+- Web fixture tests passed, adding Unicode grapheme lengths, sentence/reveal/DOM hard boundaries, max3, ordered exact coverage, bidirectional traversal, setting changes preserving position, and group-range geometry. Reveal segmentation checks remain unchanged.
+- Live Chromium checked30 style/layout combinations over widths284/320/480 and vertical/horizontal views. Token dimensions stayed unchanged; group background includes whitespace and Markdown strong runs remain. Group-center error remained under0.5 visual px due to scroll rounding. Structural breaks were verified for headings/list items/table cells; image/control boundaries are preserved without eager remote image requests.
+- Actual hardware-lab wheel events produced `오늘이 → 어제보다 → 더 많이 → 배고프다. → 더 많이 → 어제보다 → 오늘이`, with the paint layer correctly absolute and outside layout. Only the localhost favicon404 appeared. Record: `adaptive-focus-web-checks.json`.
+- Native group and grouped-rail screenshots were exported and visually inspected: coherent black/white group with side padding, and entire mixed-Markdown group centered. Files: `adaptive-group-native.png`, `adaptive-group-rail.png`.
+- Final signed Release build and iPhone13mini installation succeeded. Automatic launch was blocked by the phone's locked state (CoreDevice10002/FBS Locked); the owner can open the installed app after unlocking. Temporary browser/server stopped.
+
+Limits: grouping is deterministic character-count grouping, not semantic/morphological analysis. The minimum is soft at hard boundaries; unusual sentence segmentation can vary between platform parsers. These checks establish behavior and layout, not reading/attention benefit. Compare minimum1/2/3/4 with the same reveal settings.
+
+---
+
 # Context Margin / rotary response verification — 2026-10-08
 
 - 32 native logic tests passed across the unit run and focused corrections: the old zero-margin tests remain, plus symmetric safe windows, real neighbors, document ends, short-panel fallback, fresh/old settings defaults, initial angle, CW/CCW reversal and wraparound.

@@ -17,7 +17,7 @@ No backend, account or analytics. Markdown scripts are bundled locally; remote i
 
 ## Reading
 
-Open the app and read immediately. Tap the wheel left/right for chunks, up/down for adjacent sentence starts, or drag clockwise/counterclockwise on the ring to focus one eojeol/word per 15° detent. The first ring movement activates fine focus; it traverses continuously across reveals. Direction buttons clear it. The center is intentionally inert. The gear opens a plain utility settings sheet.
+Open the app and read immediately. Tap the wheel left/right for chunks, up/down for adjacent sentence starts, or drag clockwise/counterclockwise on the ring to focus one precomputed group per 15° detent. The first ring movement activates fine focus; it traverses continuously across reveals. Minimum Focus Length1/2/3/4 (default3) combines short words up to three eojeol without crossing reveal or sentence boundaries;1 restores the original token baseline. Direction buttons clear it. The center is intentionally inert. The gear opens a plain utility settings sheet.
 
 Settings accept pasted plain text/Markdown or TXT/MD files through a fixed-height source editor, three display modes and four segmentation modes, six panel references, font/spacing/history adjustments and optional progress/haptics. Text draft changes require Apply. Current Only is vertically centered. Accumulated past keeps rows stationary during CCW regression until the top boundary is crossed, with all past rows at full contrast. Full displays a naturally wrapped scrollable document; Horizontal Rail displays the whole document on one unwrapped line, snapping each selected word to the exact viewport center while the document strip moves underneath. Full/horizontal apply Markdown formatting. Progressive chunks remain normalized plain text. Reveals are left-aligned. Word Focus Settings compare yellow background, text color, underline, dim others and black background / white text without moving text. Text & Spacing also offers Context Margin 0/1/2: positive values reserve real neighboring lines and scroll early in vertical modes; zero preserves the previous behavior. New settings default1 while existing saves migrate to0. There is no activation toggle or timed progression. Reading position and settings persist locally. Reading keeps the screen awake; opening settings or leaving the app restores normal idle behavior.
 
@@ -33,7 +33,7 @@ xcodebuild -project PocketReader.xcodeproj -scheme PocketReader \
   -parallel-testing-enabled NO test
 ```
 
-See the [latest context-margin revision](docs/CONTEXT_MARGIN_REVISION.md), [implementation decisions](docs/IMPLEMENTATION.md) and [verification](docs/VERIFICATION.md). Tests use an isolated sample and temporary storage, never real reading data.
+See the [latest grouping revision](docs/ADAPTIVE_FOCUS_GROUPING.md), [implementation decisions](docs/IMPLEMENTATION.md) and [verification](docs/VERIFICATION.md). Tests use an isolated sample and temporary storage, never real reading data.
 
 ![Manual word focus — actual simulator](docs/verification/word-focus-native-yellow.png)
 

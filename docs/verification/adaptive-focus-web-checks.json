@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-08",
+  "engine": "live Chromium",
+  "styleChecks": 30,
+  "widths": [
+    284,
+    320,
+    480
+  ],
+  "verticalAndHorizontal": true,
+  "maxGroupCenterErrorPixels": 0.46875,
+  "tokenGeometryInvariant": true,
+  "inlineStrongPreserved": true,
+  "coherentInterTokenBackground": true,
+  "structuralAndSentenceBreaksPresent": true,
+  "actualLabWheelSequence": [
+    "오늘이",
+    "어제보다",
+    "더 많이",
+    "배고프다.",
+    "더 많이",
+    "어제보다",
+    "오늘이"
+  ],
+  "labLayerPosition": "absolute"
+}
