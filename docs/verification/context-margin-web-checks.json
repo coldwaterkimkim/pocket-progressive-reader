@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-08",
+  "engine": "live Chromium",
+  "marginOptions": [
+    0,
+    1,
+    2
+  ],
+  "positiveMarginForwardBackwardChecks": 1920,
+  "heights": [
+    76,
+    180,
+    240
+  ],
+  "maxSafeBoundaryViolationPixels": 0,
+  "markdownRealAdjacentBlocks": true,
+  "horizontalCenterIndependent": true,
+  "blackYellowPaintOnlyBackgroundExpansionPixels": 3
+}

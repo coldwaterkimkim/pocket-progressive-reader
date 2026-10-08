@@ -1,3 +1,17 @@
+# Context Margin / rotary response verification — 2026-10-08
+
+- 32 native logic tests passed across the unit run and focused corrections: the old zero-margin tests remain, plus symmetric safe windows, real neighbors, document ends, short-panel fallback, fresh/old settings defaults, initial angle, CW/CCW reversal and wraparound.
+- Three distinct UI flows passed across focused runs: Context Margin picker 0/1/2 and forward/backward chunk window; rotary activation/regression/coarse reset; Full Markdown with positive margin and unchanged Horizontal Rail centering. This is not a new complete UI-suite run.
+- Unit/window results: `test_sim_2026-10-08T03-57-28-289Z_pid4836_2ab4364c.xcresult`; context UI: `test_sim_2026-10-08T03-54-14-589Z_pid4836_6afd870f.xcresult` (its initial ring test failed due to the fixture assuming the formerly lost first angular movement; corrected longer fixture passed in the focused rerun). Final Full/rail UI: `test_sim_2026-10-08T04-04-26-057Z_pid4836_6442d0a3.xcresult`.
+- Web fixture checks pass, including zero-margin compatibility, symmetric 1/2 margins, fine and coarse windows, small panels, normal context opacity and opposite wheel residual cancellation. Canvas remains a deterministic fixture.
+- Live Chromium verified 1,920 forward/backward interior token changes across heights76/180/240 and margins1/2 with no safe-boundary violations. Markdown block spacing/headings use real neighboring rows; measured examples retained both neighboring blocks. Horizontal center and paint-only 3px side padding remain. Only a localhost favicon404 appeared. Record: `context-margin-web-checks.json`.
+- Exported native context/full/rail screenshots were visually inspected. The context frame shows active line8 with line9 already visible below and earlier lines6/7 above, all normal ink.
+- Final signed Release build succeeded for the connected iPhone 13 mini, and installation, launch and running process were confirmed after the owner connected it. Temporary browser/server stopped.
+
+No input-to-photon latency trace was captured: input loss/cancellation is covered by deterministic tests, and the WebKit queue is structurally bounded to one request using the latest cursor. Physical perceived response and reading comfort remain owner hands-on checks. Existing saved settings keep margin0; select1 in Text & Spacing to try the experiment.
+
+---
+
 # Horizontal Rail vertical centering — 2026-10-07
 
 The single line is now vertically centered as well as horizontally focus-centered. A non-shrinking document strip preserves inline Markdown structure. Automatic WebKit text enlargement is disabled so the configured font size remains unchanged.
