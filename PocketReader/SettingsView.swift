@@ -133,6 +133,11 @@ struct SettingsView: View {
                     Stepper(value: $store.settings.padding, in: 2...30, step: 1) {
                         valueRow("안쪽 여백", value: "\(Int(store.settings.padding)) px")
                     }
+                    Picker("맥락 여백", selection: $store.settings.scrollMarginLines) {
+                        ForEach(0...2, id: \.self) { lines in Text("\(lines)줄").tag(lines) }
+                    }
+                    .accessibilityIdentifier("settings.scrollMarginLines")
+                    .disabled(store.settings.presentation == .horizontal)
                     Stepper(value: $store.settings.pastLines, in: 0...6) {
                         valueRow("과거 표시 줄 수", value: "\(store.settings.pastLines)줄")
                     }
@@ -140,7 +145,7 @@ struct SettingsView: View {
                 } header: {
                     Text("글자와 여백")
                 } footer: {
-                    Text("현재 조각 1줄과 과거 맥락 최대 \(capacity)줄을 표시할 수 있어. 과거 맥락은 설정한 줄 수 안에서 같은 대비로 표시해. Full과 가로 스크롤에서는 전체 본문을 스크롤해. px는 선택한 패널 해상도 기준이야.")
+                    Text("선택한 패널에는 최대 \(capacity + 1)줄을 표시할 수 있어. 맥락은 같은 대비로 표시해. 맥락 여백이 있으면 실제 앞뒤 줄을 보여주고, 그 여백에 들어가기 전에 스크롤해. 화면이 작으면 유효 여백을 줄여. Full과 가로 스크롤에서는 전체 본문을 스크롤해. px는 선택한 패널 해상도 기준이야.")
                 }
 
                 Section("기타") {

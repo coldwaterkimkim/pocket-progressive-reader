@@ -104,6 +104,7 @@ final class ReadingEngineTests: XCTestCase {
 final class ReaderStoreTests: XCTestCase {
     func testNavigationBoundsAndNoFutureHistoryAfterRegression() {
         let store = ReaderStore(persistenceURL: nil)
+        store.settings.scrollMarginLines = 0
         store.move(Int.min)
         XCTAssertEqual(store.index, 0)
         store.move(Int.max)
@@ -119,6 +120,7 @@ final class ReaderStoreTests: XCTestCase {
     }
     func testSentenceNavigationAndHistoryReset() {
         let store = ReaderStore(persistenceURL: nil)
+        store.settings.scrollMarginLines = 0
         store.updateText("첫 문장에는 충분히 여러 단어가 있어서 조각을 나눌 수 있다. 두 번째 문장도 충분히 길어서 나눠진다.")
         store.settings.panel = .bar225
         store.settings.presentation = .past
@@ -138,6 +140,7 @@ final class ReaderStoreTests: XCTestCase {
     }
     func testReflowKeepsOriginalOffsetWithDuplicateText() {
         let store = ReaderStore(persistenceURL: nil)
+        store.settings.scrollMarginLines = 0
         store.updateText(String(repeating: "같은 문장 같은 단어를 다시 읽는다. ", count: 20))
         store.move(store.units.count / 2)
         let offset = store.current!.sourceRange.location
@@ -233,6 +236,7 @@ final class ReaderStoreTests: XCTestCase {
     }
     func testFineTraversalActivatesThenCrossesBothWaysWithoutSkippingTokens() {
         let store = ReaderStore(persistenceURL: nil)
+        store.settings.scrollMarginLines = 0
         store.settings.panel = .bar225; store.settings.fontSize = 34
         store.updateText("나는 오늘 작은 리더기를 직접 만들어 보기로 했다. 다음 문장도 천천히 읽는다.")
         XCTAssertNil(store.focusedTokenIndex)
@@ -254,6 +258,7 @@ final class ReaderStoreTests: XCTestCase {
     }
     func testEveryCoarseActionClearsFocusIncludingBoundaryNoOp() {
         let store = ReaderStore(persistenceURL: nil)
+        store.settings.scrollMarginLines = 0
         store.updateText("처음 문장을 천천히 읽는다. 다음 문장을 읽는다.")
         store.moveFocus(1); store.move(-1); XCTAssertNil(store.focusedTokenIndex)
         store.moveFocus(1); store.moveSentence(-1); XCTAssertNil(store.focusedTokenIndex)
@@ -284,6 +289,7 @@ final class ReaderStoreTests: XCTestCase {
     }
     func testCounterclockwiseKeepsViewportUntilCrossingItsTop() {
         let store = ReaderStore(persistenceURL: nil)
+        store.settings.scrollMarginLines = 0
         store.updateText(String(repeating: "문장을 하나씩 읽는다. ", count: 20))
         store.move(8)
         let end = store.viewportEndIndex
@@ -295,6 +301,49 @@ final class ReaderStoreTests: XCTestCase {
         store.moveFocus(-store.current!.tokens.count * 10)
         XCTAssertLessThan(store.viewportEndIndex, end)
         XCTAssertTrue(store.displayedUnits.contains(store.current!))
+    }
+    func testContextMarginWindowIsSymmetricAndContainsRealNeighbors() {
+        for requested in [1, 2] {
+            let store = ReaderStore(persistenceURL: nil)
+            store.updateText((0..<30).map { "줄\($0)." }.joined(separator: " "))
+            store.settings.panel = .control200
+            store.settings.scrollMarginLines = requested
+            store.rebuild()
+            store.move(10)
+            let m = store.effectiveContextMargin, rows = store.contextRowCount
+            XCTAssertGreaterThan(m, 0)
+            var end = store.viewportEndIndex
+            XCTAssertEqual(end - store.index, m)
+            XCTAssertTrue(store.displayedUnits.contains(where: { $0.id == store.units[store.index + 1].id }))
+            store.moveFocus(1); store.moveFocus(-1)
+            XCTAssertEqual(store.viewportEndIndex, rows > 2 * m + 1 ? end : end - 1)
+            end = store.viewportEndIndex
+            while store.index >= end - rows + 1 + m { store.moveFocus(-1) }
+            XCTAssertLessThan(store.viewportEndIndex, end)
+            XCTAssertEqual(store.index, store.viewportEndIndex - rows + 1 + m)
+            store.move(Int.max)
+            XCTAssertEqual(store.viewportEndIndex, store.units.count - 1)
+            store.move(Int.min)
+            XCTAssertEqual(store.index, 0)
+            XCTAssertEqual(store.displayedUnits.count, rows)
+            store.settings.panel = .bar225; store.settings.fontSize = 34
+            store.refreshViewport()
+            XCTAssertEqual(store.effectiveContextMargin, 0)
+            XCTAssertTrue(store.displayedUnits.contains(store.current!))
+        }
+    }
+    func testMarginDefaultsAndRotaryReversalDoNotLoseInput() throws {
+        XCTAssertEqual(ReaderSettings().scrollMarginLines, 1)
+        XCTAssertEqual(try JSONDecoder().decode(ReaderSettings.self, from: Data("{}".utf8)).scrollMarginLines, 0)
+        var rotary = RotaryStepper()
+        let rad = Double.pi / 180
+        XCTAssertEqual(rotary.consume(angle: 14 * rad, startAngle: 0), 0)
+        XCTAssertEqual(rotary.consume(angle: -2 * rad, startAngle: 0), -1)
+        rotary.reset()
+        XCTAssertEqual(rotary.consume(angle: 16 * rad, startAngle: 0), 1)
+        rotary.reset()
+        XCTAssertEqual(rotary.consume(angle: -179 * rad, startAngle: 179 * rad), 0)
+        XCTAssertEqual(rotary.consume(angle: -164 * rad, startAngle: 179 * rad), 1)
     }
     func testWholeDocumentModesKeepAllTokensAndRetiredModeMigrates() throws {
         var settings = ReaderSettings(); settings.segmentation = .full
@@ -309,6 +358,7 @@ final class ReaderStoreTests: XCTestCase {
     }
     func testWholeDocumentCoarseNavigationStartsAtFocusedSentence() {
         let store = ReaderStore(persistenceURL: nil)
+        store.settings.scrollMarginLines = 0
         store.updateText("첫 문장. 둘째 문장. 셋째 문장. 넷째 문장.")
         store.settings.segmentation = .full
         store.rebuild()

@@ -3,8 +3,8 @@ import UIKit
 
 struct ClickWheel: View {
     let store: ReaderStore
+    @State private var rotary = RotaryStepper()
     @State private var lastAngle: Double?
-    @State private var accumulated = 0.0
     @State private var scrubbing = false
 
     var body: some View {
@@ -44,28 +44,24 @@ struct ClickWheel: View {
                     let radius = hypot(dx, dy)
                     guard radius > size * 0.24, radius < size * 0.55 else {
                         lastAngle = nil
-                        accumulated = 0
+                        rotary.reset()
                         return
                     }
+                    let started = scrubbing
                     scrubbing = true
                     let angle = atan2(dy, dx)
-                    if let lastAngle {
-                        var delta = angle - lastAngle
-                        if delta > .pi { delta -= 2 * .pi }
-                        if delta < -.pi { delta += 2 * .pi }
-                        accumulated += delta
-                        let detent = Double.pi / 12
-                        while abs(accumulated) >= detent {
-                            let direction = accumulated > 0 ? 1 : -1
-                            perform { store.moveFocus(direction) }
-                            accumulated -= Double(direction) * detent
-                        }
-                    }
+                    let startDX = value.startLocation.x - size / 2
+                    let startDY = value.startLocation.y - size / 2
+                    let startRadius = hypot(startDX, startDY)
+                    let start = started && lastAngle == nil ? angle
+                        : (startRadius > size * 0.24 && startRadius < size * 0.55 ? atan2(startDY, startDX) : angle)
+                    let steps = rotary.consume(angle: angle, startAngle: start)
+                    if steps != 0 { perform { store.moveFocus(steps) } }
                     lastAngle = angle
                 }
                 .onEnded { _ in
                     lastAngle = nil
-                    accumulated = 0
+                    rotary.reset()
                     // Keep release from becoming an accidental directional tap.
                     DispatchQueue.main.async { scrubbing = false }
                 })

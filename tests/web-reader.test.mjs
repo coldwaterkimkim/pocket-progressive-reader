@@ -3,17 +3,17 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 const html=fs.readFileSync(new URL('../pocket_progressive_reader_hardware_lab_v4.html',import.meta.url),'utf8');
 const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];new vm.Script(script);
-const calls=[];
+const calls=[], inks=[];
 const stack=[], decorations=[];
-const ctx={font:'22px sans-serif',globalAlpha:1,fillStyle:'#171717',save(){stack.push({font:this.font,globalAlpha:this.globalAlpha,fillStyle:this.fillStyle})},restore(){Object.assign(this,stack.pop())},measureText(text){const size=parseFloat(this.font);let width=0;for(const c of text)width+=size*(c===' '?.28:/[A-Za-z0-9]/.test(c)?.52:.98);return {width,actualBoundingBoxLeft:text.startsWith('j')?size*.06:0,actualBoundingBoxRight:width}},fillText(...a){calls.push(a)},strokeText(...a){decorations.push(['stroke',...a])},clearRect(){calls.length=0;decorations.length=0},fillRect(...a){decorations.push(['rect',...a])},beginPath(){},rect(...a){decorations.push(['clip',...a])},clip(){}};
+const ctx={font:'22px sans-serif',globalAlpha:1,fillStyle:'#171717',save(){stack.push({font:this.font,globalAlpha:this.globalAlpha,fillStyle:this.fillStyle})},restore(){Object.assign(this,stack.pop())},measureText(text){const size=parseFloat(this.font);let width=0;for(const c of text)width+=size*(c===' '?.28:/[A-Za-z0-9]/.test(c)?.52:.98);return {width,actualBoundingBoxLeft:text.startsWith('j')?size*.06:0,actualBoundingBoxRight:width}},fillText(...a){calls.push(a);inks.push([this.globalAlpha,this.fillStyle])},strokeText(...a){decorations.push(['stroke',...a])},clearRect(){calls.length=0;decorations.length=0},fillRect(...a){decorations.push(['rect',...a])},beginPath(){},rect(...a){decorations.push(['clip',...a])},clip(){}};
 const field=value=>({value,checked:false});
-const ui={source:field(''),sourceFormat:field('text'),fontSize:field(22),padding:field(14),lineGap:field(6),focusStyle:field('yellow'),presentation:field('past'),bottomInset:field(4),algorithm:field('balanced'),progress:field(''),debug:field(''),screen:{}};
+const ui={source:field(''),sourceFormat:field('text'),fontSize:field(22),padding:field(14),lineGap:field(6),focusStyle:field('yellow'),presentation:field('past'),scrollMargin:field(0),bottomInset:field(4),algorithm:field('balanced'),progress:field(''),debug:field(''),screen:{}};
 for(const id of ['sReveal','sSentence','sFill','sFontMm','sActive','sPpi','sPastSlots','sAspect','sourceStatus'])ui[id]={};
 let panel={resolution:[480,200],active:[52.42,21.72]};
 const state={viewportEnd:0,units:[],sentences:[],index:0,sentenceStarts:[],sentenceEnds:[],focusedToken:null,wheelAccum:0};
 const context=vm.createContext({ctx,ui,state,hw:()=>({display:panel}),console});
 const engine=script.slice(script.indexOf('// INPUT / NORMALIZATION'),script.indexOf('function chargeFloor('));
-vm.runInContext(engine+'\nfunction renderAll(){render()}\nthis.api={normalizeInput,sentenceSplit,buildModel,focusY,drawPresentation,move,sentenceMove,focusMove,wheelDelta,reset,lineGeometry,ingestFile};',context);
+vm.runInContext(engine+'\nfunction renderAll(){render()}\nthis.api={normalizeInput,sentenceSplit,buildModel,focusY,drawPresentation,move,sentenceMove,focusMove,wheelDelta,reset,lineGeometry,ingestFile,contextMargin,pastCapacity,updateViewport};',context);
 const {api}=context;
 const md='## Attention\n\n**Attention** is limited.\n\n- Future content competes.\n- Past context can help.\n\n[OpenAI](https://openai.com)\n> *quote* with `code`.\n![diagram](https://example.com/a.png)\n<div>HTML words</div>';
 const norm=api.normalizeInput(md,'markdown');assert(!/[#*`]|https:\/\//.test(norm));assert(norm.includes('Attention\n\nAttention is limited.'));assert(norm.includes('Future content competes.\nPast context can help.'));assert(norm.includes('quote with code.'));assert(norm.includes('HTML words'));
@@ -70,6 +70,35 @@ for(const style of ['yellow','color','underline','dim','bold'])for(let focused=0
   assert(calls.length>0);for(const [text,x,y]of calls){assert.equal(text,state.units[0].text);assert.equal(x,normalOrigin);assert.equal(y,normalY)}assert.equal(state.units[0].fontSize,normalFont);
   if(style==='bold')assert(!decorations.some(c=>c[0]==='stroke'));if(style==='yellow'||style==='underline'||style==='bold')assert(decorations.some(c=>c[0]==='rect'));
 }
+// Context Margin uses a stable symmetric safe window, including coarse moves.
+ui.source.value=Array.from({length:30},(_,i)=>`Row${i} has ordinary words.`).join(' ');ui.algorithm.value='balanced';ui.fontSize.value=22;panel={resolution:[320,170],active:[52,22]};ui.focusStyle.value='yellow';
+for(const mode of ['past','current'])for(const requested of [1,2]){
+  ui.presentation.value=mode;ui.scrollMargin.value=requested;api.buildModel();
+  const slots=api.pastCapacity(),margin=api.contextMargin();assert.equal(margin,Math.min(requested,Math.floor(slots/2)));
+  api.move(10);const initialEnd=state.viewportEnd,initialStart=Math.max(0,initialEnd-slots);
+  assert.equal(initialEnd,10+margin);
+  // Advance within safe bounds without moving the document rows.
+  api.move(-1);assert.equal(state.viewportEnd,initialEnd);api.move(1);assert.equal(state.viewportEnd,initialEnd);
+  api.move(1);assert.equal(state.viewportEnd,initialEnd+1);
+  const forwardEnd=state.viewportEnd,safeStart=forwardEnd-slots+margin;
+  api.move(safeStart-state.index);assert.equal(state.viewportEnd,forwardEnd);
+  api.move(-1);assert.equal(state.viewportEnd,forwardEnd-1);
+  calls.length=0;inks.length=0;api.drawPresentation();assert(calls.length>1);assert(calls.some(([text])=>state.units.slice(state.index+1).some(u=>u.text===text)));assert(inks.every(([alpha,color])=>alpha===1&&color==='#171717'));
+  // Fine movement uses the same threshold in both directions.
+  state.index=10;api.updateViewport(true);const fineEnd=state.viewportEnd;state.focusedToken=0;api.focusMove(-1);assert.equal(state.viewportEnd,fineEnd);
+  while(state.index>=fineEnd-slots+margin){state.focusedToken=0;api.focusMove(-1)}assert.equal(state.viewportEnd,fineEnd-1);
+  api.reset();assert.equal(state.index,0);assert.equal(state.viewportEnd,Math.min(slots,state.units.length-1));
+  api.move(state.units.length);assert.equal(state.index,state.units.length-1);assert.equal(state.viewportEnd,state.units.length-1);
+}
+for(const height of [35,76,100]){
+  panel={resolution:[320,height],active:[52,22]};ui.scrollMargin.value=2;ui.presentation.value='current';api.buildModel();assert(api.contextMargin()<=Math.floor(api.pastCapacity()/2));
+  for(const target of [0,1,state.units.length-1]){api.move(target-state.index);calls.length=0;api.drawPresentation();assert(calls.length>0);assert(calls.some(([text])=>text===state.units[state.index].text));assert(calls.length<=api.pastCapacity()+1)}
+}
+ui.scrollMargin.value=0;panel={resolution:[320,170],active:[52,22]};ui.presentation.value='current';api.buildModel();calls.length=0;api.drawPresentation();assert.equal(calls.length,1);assert.equal(api.focusY(),85);
+
+// An opposite partial wheel residual must not delay the next reverse detent.
+api.reset();api.focusMove(1);api.focusMove(1);const beforeReverse=state.focusedToken;
+api.wheelDelta(49);api.wheelDelta(-50);assert.equal(state.focusedToken,beforeReverse-1);
 // Whole-document modes do not scale, truncate, or segment the source.
 ui.source.value='첫 문장 전체.\n다음 문장 전체.\n\n세 번째 문단.';ui.algorithm.value='full';api.buildModel();assert.equal(state.units.length,1);assert.equal(state.units[0].text,state.document);assert(!state.units[0].scaled);assert.equal(state.units[0].tokens.length,9);api.focusMove(1);assert.equal(state.focusedToken,0);
 ui.algorithm.value='balanced';ui.presentation.value='horizontal';api.buildModel();assert.equal(state.units.length,1);assert.equal(state.units[0].text,state.document);ui.presentation.value='past';
@@ -78,4 +107,4 @@ const long='긴 문서의 정상 문장입니다.\n'.repeat(15000);await api.ing
 assert(/textarea\{height:180px;min-height:180px;overflow-y:auto/.test(html));assert(html.includes('textarea{resize:none}'));assert(html.includes('id="loadMdBtn"'));assert(!script.includes('maxLength'));
 assert(!/gaze|anchorX|anchorGeometry|anchorFraction|alignment/iu.test(html));
 assert(/function centerAction\(\)\{\}/.test(script));
-console.log('PASS: normalization, 18 panel/chunker combinations, structured original token ranges, oversized eojeol, fixed baselines/history/no future, transient fine focus + bounded continuous traversal + coarse reset, five stationary styles, large file ingestion and fixed editor. Canvas metrics are a deterministic fixture; browser pixel rendering requires separate verification.');
+console.log('PASS: normalization, 18 panel/chunker combinations, structured original token ranges, oversized eojeol, legacy zero-margin fixed baselines/history/no future, symmetric Context Margin safe windows/coarse and fine traversal/short panels/normal context ink, transient fine focus + bounded continuous traversal + coarse reset, five stationary styles, large file ingestion and fixed editor. Canvas metrics are a deterministic fixture; browser pixel rendering requires separate verification.');

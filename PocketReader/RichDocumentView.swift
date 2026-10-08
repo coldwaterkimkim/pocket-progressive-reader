@@ -45,8 +45,10 @@ struct RichDocumentView: UIViewRepresentable {
             "horizontal": store.settings.presentation == .horizontal,
             "fontSize": store.settings.fontSize * scale,
             "padding": store.settings.padding * scale,
-            "lineGap": store.settings.lineGap * scale
+            "lineGap": store.settings.lineGap * scale,
+            "scrollMarginLines": store.settings.scrollMarginLines
         ]
+        coordinator.renderKey = "\(store.sourceFormat.rawValue)|\(store.settings.presentation == .horizontal)|\(store.settings.fontSize * scale)|\(store.settings.padding * scale)|\(store.settings.lineGap * scale)|\(store.settings.scrollMarginLines)"
         coordinator.focus = store.globalFocusedTokenIndex
         coordinator.coarse = store.coarseTokenIndex
         coordinator.style = store.settings.wordFocusStyle.rawValue
@@ -66,9 +68,11 @@ struct RichDocumentView: UIViewRepresentable {
         var coarse: Int?
         var style = "yellow"
         private var loaded = false
-        private var mountedPayload = ""
-        private var lastFocus = ""
-        private var lastCoarse: Int?
+        var renderKey = ""
+        private var mountedSource: String?
+        private var mountedKey = ""
+        private var lastVisualKey = ""
+        private var inFlight = false
 
         init(store: ReaderStore) { self.store = store }
 
@@ -78,24 +82,31 @@ struct RichDocumentView: UIViewRepresentable {
         }
 
         func synchronize() {
-            guard loaded, let webView,
-                  let data = try? JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys]),
-                  let json = String(data: data, encoding: .utf8) else { return }
-            if json != mountedPayload {
-                mountedPayload = json
-                lastFocus = ""
-                lastCoarse = nil
-                webView.evaluateJavaScript("RichReader.mount(\(json));")
+            guard loaded, !inFlight, let webView else { return }
+            // Source stays a Swift value and is serialized only when the document/layout changes.
+            if mountedSource != store.text || mountedKey != renderKey {
+                guard let data = try? JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys]),
+                      let json = String(data: data, encoding: .utf8) else { return }
+                mountedSource = store.text; mountedKey = renderKey; lastVisualKey = ""
+                inFlight = true
+                webView.evaluateJavaScript("RichReader.mount(\(json));") { [weak self] _, _ in
+                    guard let self else { return }
+                    self.inFlight = false; self.synchronize()
+                }
+                return
             }
-            if let coarse, coarse != lastCoarse {
-                webView.evaluateJavaScript("RichReader.ensureTokenVisible(\(coarse));")
-            }
-            lastCoarse = coarse
-            let focusArgument = focus.map(String.init) ?? "null"
-            let focusKey = focusArgument + style
-            if focusKey != lastFocus {
-                lastFocus = focusKey
-                webView.evaluateJavaScript("RichReader.focus(\(focusArgument), '\(style)');")
+            let selected = store.globalFocusedTokenIndex
+            let coarse = store.coarseTokenIndex
+            let style = store.settings.wordFocusStyle.rawValue
+            let argument = selected.map(String.init) ?? "null"
+            let key = "\(argument)|\(coarse.map(String.init) ?? "null")|\(style)"
+            guard key != lastVisualKey else { return }
+            lastVisualKey = key; inFlight = true
+            let scroll = selected == nil ? coarse.map { "RichReader.ensureTokenVisible(\($0));" } ?? "" : ""
+            // One visual request at a time; on completion use the latest Store cursor, never a stale queue.
+            webView.evaluateJavaScript("RichReader.focus(\(argument), '\(style)');\(scroll)") { [weak self] _, _ in
+                guard let self else { return }
+                self.inFlight = false; self.synchronize()
             }
         }
 

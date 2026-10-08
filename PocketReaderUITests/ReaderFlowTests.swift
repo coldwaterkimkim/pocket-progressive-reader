@@ -32,7 +32,7 @@ final class ReaderFlowTests: XCTestCase {
 
     func testRingActivatesWordFocusAndCoarseNavigationClearsIt() {
         openSettings()
-        replaceDraft(with: "하나 둘 셋 넷 다섯. 다음 문장입니다.")
+        replaceDraft(with: "하나 둘 셋 넷 다섯 여섯 일곱. 다음 문장입니다.")
         app.buttons["settings.applyText"].tap()
         closeSettings()
         let wheel = element("wheel")
@@ -308,6 +308,7 @@ final class ReaderFlowTests: XCTestCase {
         app.buttons["settings.applyText"].tap()
         choose("settings.segmentation", title: "Full · 전체 본문")
         choose("settings.wordFocusStyle", title: "검은 배경")
+        choose("settings.scrollMarginLines", title: "1줄")
         closeSettings()
         let document = element("reader.document")
         XCTAssertTrue(document.waitForExistence(timeout: 8))
@@ -341,6 +342,30 @@ final class ReaderFlowTests: XCTestCase {
         rail.name = "Horizontal rail stationary centered black focus"
         rail.lifetime = .keepAlways
         add(rail)
+    }
+
+    func testContextMarginSettingsAndStableForwardBackwardWindow() {
+        openSettings()
+        replaceDraft(with: (0..<24).map { "줄\($0)." }.joined(separator: " "))
+        app.buttons["settings.applyText"].tap()
+        choose("settings.scrollMarginLines", title: "1줄")
+        closeSettings()
+        for _ in 0..<8 { app.buttons["wheel.right"].tap() }
+        let display = element("reader.display").frame
+        XCTAssertGreaterThan(current.frame.minY, display.minY)
+        XCTAssertLessThan(current.frame.maxY, display.maxY)
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "Context Margin real adjacent lines"
+        shot.lifetime = .keepAlways
+        add(shot)
+        app.buttons["wheel.left"].tap()
+        XCTAssertGreaterThan(current.frame.minY, display.minY)
+        XCTAssertLessThan(current.frame.maxY, display.maxY)
+        openSettings()
+        choose("settings.scrollMarginLines", title: "2줄")
+        choose("settings.scrollMarginLines", title: "0줄")
+        closeSettings()
+        XCTAssertTrue(app.buttons["home.settings"].isHittable)
     }
 
     func testCounterclockwiseMovesUpWithinVisibleViewport() {

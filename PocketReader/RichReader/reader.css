@@ -25,3 +25,6 @@ p{margin:.45em 0}h1,h2,h3,h4,h5,h6{line-height:1.25;margin:.5em 0}h1{font-size:1
 #reader-document.horizontal .rail-strip{display:block;flex:none;white-space:nowrap;line-height:inherit}
 
 #reader-document{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+
+[data-focus-style=yellow] .focused{box-shadow:3px 0 #f2d75f,-3px 0 #f2d75f}
+[data-focus-style=highContrast] .focused{box-shadow:3px 0 #000,-3px 0 #000}

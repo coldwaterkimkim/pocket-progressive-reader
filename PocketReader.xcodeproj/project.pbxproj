@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		020D39DBACA035F69D11684B /* RotaryStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B357FA480FCA4FF370DA15 /* RotaryStepper.swift */; };
 		2301A639CF746821746DDF13 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F239D4E842D69538F2150338 /* HomeView.swift */; };
 		2E4BFAF66903C6422D81F9C7 /* ClickWheel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4586EEAACC54B83AABF94D9A /* ClickWheel.swift */; };
 		438F2E2FF7A2861780E4A615 /* ReaderFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97471180F9DC7F7E62F3F5B9 /* ReaderFlowTests.swift */; };
@@ -59,6 +60,7 @@
 		9EE4431E1DA64519729ED07E /* ReaderDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderDisplay.swift; sourceTree = "<group>"; };
 		A4E33CA21876231448933FB9 /* PocketReaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketReaderApp.swift; sourceTree = "<group>"; };
 		A71C214930088494A833F691 /* ReadingEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingEngineTests.swift; sourceTree = "<group>"; };
+		B2B357FA480FCA4FF370DA15 /* RotaryStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RotaryStepper.swift; sourceTree = "<group>"; };
 		BDC51FA9A2C337E1464BFE94 /* RichReader */ = {isa = PBXFileReference; lastKnownFileType = folder; name = RichReader; path = PocketReader/RichReader; sourceTree = SOURCE_ROOT; };
 		C1070AA5134930D9674A78B2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D1509A5C24A166EDC9047DA2 /* ReaderStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderStore.swift; sourceTree = "<group>"; };
@@ -97,6 +99,7 @@
 				D1509A5C24A166EDC9047DA2 /* ReaderStore.swift */,
 				D9FBB0D14FB892CAE54A7D28 /* ReadingEngine.swift */,
 				903DFFE84D00BFFB2C065975 /* RichDocumentView.swift */,
+				B2B357FA480FCA4FF370DA15 /* RotaryStepper.swift */,
 				960FD7417A47B513E0F0D516 /* SettingsView.swift */,
 				E0783B00209693AC3E875AD4 /* SourceDocument.swift */,
 			);
@@ -266,6 +269,7 @@
 				E8508ACA0A417772A370B6CC /* ReaderStore.swift in Sources */,
 				DAE53B64059D80FF5636ABAA /* ReadingEngine.swift in Sources */,
 				98CEFD162E42C8EEDC584CC3 /* RichDocumentView.swift in Sources */,
+				020D39DBACA035F69D11684B /* RotaryStepper.swift in Sources */,
 				F0B3646EEA19651E8C458560 /* SettingsView.swift in Sources */,
 				CB7A4018FCB62ED4BB055726 /* SourceDocument.swift in Sources */,
 			);

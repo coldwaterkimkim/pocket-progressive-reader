@@ -71,11 +71,13 @@ struct ReaderDisplay: View {
     private var chunkDisplay: some View {
         let settings = store.settings
         let lineHeight = Double(ReadingEngine.font(settings).lineHeight)
-        let currentTop = PresentationGeometry.currentTop(settings: settings)
+        var laneSettings = settings
+        if store.usesContextWindow { laneSettings.presentation = .past }
+        let currentTop = PresentationGeometry.currentTop(settings: laneSettings)
         return ZStack(alignment: .topLeading) {
             if store.current == nil {
                 activeLine(nil, y: currentTop)
-            } else if settings.presentation == .current {
+            } else if settings.presentation == .current && !store.usesContextWindow {
                 activeLine(store.current, y: currentTop)
             } else {
                 ForEach(Array(store.displayedUnits.enumerated()), id: \.element.id) { offset, unit in
@@ -138,10 +140,10 @@ struct ReaderDisplay: View {
                 let style = store.settings.wordFocusStyle
                 if style == .yellow {
                     graphics.setFillColor(UIColor(red: 1, green: 0.84, blue: 0.2, alpha: 0.7).cgColor)
-                    graphics.fill(rect)
+                    graphics.fill(rect.insetBy(dx: -3, dy: 0))
                 } else if style == .highContrast {
                     graphics.setFillColor(UIColor.black.cgColor)
-                    graphics.fill(rect)
+                    graphics.fill(rect.insetBy(dx: -3, dy: 0))
                 }
                 draw(style == .dimOthers ? UIColor(white: 0.12, alpha: 0.25) : ink)
                 if style == .underline {

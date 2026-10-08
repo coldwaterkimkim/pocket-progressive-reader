@@ -1,7 +1,7 @@
 /* Shared bundled Markdown renderer. No runtime CDN or remote request until an image button is tapped. */
 (function (global) {
   'use strict';
-  let root, tokens = [], active = null, previousSource = null;
+  let root, tokens = [], active = null, previousSource = null, scrollMarginLines = 0;
   const blocks = new Set(['P','DIV','H1','H2','H3','H4','H5','H6','LI','BLOCKQUOTE','PRE','TR','TH','TD','HR','BR']);
   function prepareImages() {
     root.querySelectorAll('img').forEach(img => {
@@ -68,6 +68,34 @@
       root.scrollLeft += ((a.left + b.right) / 2 - (bounds.left + bounds.right) / 2) * scale;
       return;
     }
+    if (scrollMarginLines > 0) {
+      // Find actual neighboring visual rows, including Markdown headings/block spacing.
+      // Walk only the nearby tokens; never reshape or enumerate the whole document per detent.
+      function adjacent(direction) {
+        const rows = []; let edge = direction < 0 ? a.top : b.bottom;
+        for (let j = index + direction; j >= 0 && j < tokens.length && rows.length < scrollMarginLines; j += direction) {
+          const parts = tokens[j].elements; if (!parts.length) continue;
+          const firstBox = parts[0].getBoundingClientRect(), lastBox = parts[parts.length - 1].getBoundingClientRect();
+          const box = {top:firstBox.top, bottom:lastBox.bottom};
+          if (direction < 0 ? box.bottom <= edge + .5 : box.top >= edge - .5) {
+            rows.push(box); edge = direction < 0 ? box.top : box.bottom;
+          }
+        }
+        return rows;
+      }
+      const before = adjacent(-1), after = adjacent(1);
+      let margin = scrollMarginLines, top = a.top, bottom = b.bottom;
+      do {
+        top = margin && before.length ? before[Math.min(margin, before.length) - 1].top : a.top;
+        bottom = margin && after.length ? after[Math.min(margin, after.length) - 1].bottom : b.bottom;
+        if (bottom - top <= bounds.height + .5 || margin === 0) break;
+        margin--;
+      } while (true);
+      const scale = root.clientHeight / bounds.height;
+      if (top < bounds.top) root.scrollTop -= (bounds.top - top) * scale;
+      else if (bottom > bounds.bottom) root.scrollTop += (bottom - bounds.bottom) * scale;
+      return;
+    }
     if (a.top < bounds.top || b.bottom > bounds.bottom || a.left < bounds.left || b.right > bounds.right) {
       first.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});
     }
@@ -85,6 +113,7 @@
   }
   function mount(payload) {
     root = document.getElementById('reader-document'); if (!root) throw new Error('Missing reader-document'); active = null;
+    scrollMarginLines = Math.min(2, Math.max(0, Number(payload.scrollMarginLines || 0)));
     const source = String(payload.source || '');
     if (source !== previousSource) { root.scrollTop = 0; root.scrollLeft = 0; previousSource = source; }
     if (payload.format === 'markdown') {

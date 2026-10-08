@@ -83,6 +83,7 @@ struct ReaderSettings: Codable, Equatable {
     var lineGap: Double = 6
     var padding: Double = 14
     var pastLines: Int = 3
+    var scrollMarginLines: Int = 1
     var actualSize: Bool = false
     // Points per mm is intentionally calibrated by the reader, never inferred from screen PPI.
     var pointsPerMM: Double = 6.0
@@ -92,7 +93,7 @@ struct ReaderSettings: Codable, Equatable {
 
 extension ReaderSettings {
     private enum CodingKeys: String, CodingKey {
-        case presentation, segmentation, wordFocusStyle, panel, fontSize, lineGap, padding, pastLines, actualSize, pointsPerMM, showProgress, haptics
+        case presentation, segmentation, wordFocusStyle, panel, fontSize, lineGap, padding, pastLines, scrollMarginLines, actualSize, pointsPerMM, showProgress, haptics
     }
     init(from decoder: Decoder) throws {
         self.init()
@@ -106,6 +107,7 @@ extension ReaderSettings {
         lineGap = try c.decodeIfPresent(Double.self, forKey: .lineGap) ?? lineGap
         padding = try c.decodeIfPresent(Double.self, forKey: .padding) ?? padding
         pastLines = try c.decodeIfPresent(Int.self, forKey: .pastLines) ?? pastLines
+        scrollMarginLines = min(2, max(0, try c.decodeIfPresent(Int.self, forKey: .scrollMarginLines) ?? 0))
         actualSize = try c.decodeIfPresent(Bool.self, forKey: .actualSize) ?? actualSize
         pointsPerMM = try c.decodeIfPresent(Double.self, forKey: .pointsPerMM) ?? pointsPerMM
         showProgress = try c.decodeIfPresent(Bool.self, forKey: .showProgress) ?? showProgress

@@ -31,11 +31,34 @@ final class ReaderStore {
     var globalFocusedTokenIndex: Int? {
         focusedTokenIndex.map { tokenStarts[index] + $0 }
     }
+    var contextRowCount: Int {
+        // Honor the existing history preference, but reserve enough rows for both margins + focus.
+        let wanted = max(settings.pastLines + 1, 2 * settings.scrollMarginLines + 1)
+        return max(1, min(units.count, min(capacity + 1, wanted)))
+    }
+    var effectiveContextMargin: Int { min(settings.scrollMarginLines, (contextRowCount - 1) / 2) }
+    var usesContextWindow: Bool { settings.scrollMarginLines > 0 && !isWholeDocument }
+    func refreshViewport(reset: Bool = false) {
+        guard usesContextWindow, !units.isEmpty else {
+            if reset { viewportEndIndex = index }
+            return
+        }
+        let rows = contextRowCount, margin = effectiveContextMargin
+        let maxStart = max(0, units.count - rows)
+        var start = reset ? index + margin - rows + 1 : viewportEndIndex - rows + 1
+        start = min(maxStart, max(0, start))
+        let end = start + rows - 1
+        let safeTop = start == 0 ? 0 : start + margin
+        let safeBottom = end == units.count - 1 ? end : end - margin
+        if index < safeTop { start = max(0, index - margin) }
+        if index > safeBottom { start = min(maxStart, index + margin - rows + 1) }
+        viewportEndIndex = start + rows - 1
+    }
     var displayedUnits: [ReadingUnit] {
         guard !units.isEmpty else { return [] }
-        if settings.presentation == .current || isWholeDocument { return current.map { [$0] } ?? [] }
+        if isWholeDocument || (settings.presentation == .current && !usesContextWindow) { return current.map { [$0] } ?? [] }
         let end = min(viewportEndIndex, units.count - 1)
-        let past = min(settings.pastLines, capacity)
+        let past = usesContextWindow ? contextRowCount - 1 : min(settings.pastLines, capacity)
         return Array(units[max(0, end - past)...end])
     }
     var visiblePast: [ReadingUnit] { displayedUnits.filter { $0.sourceRange.location < (current?.sourceRange.location ?? 0) } }
@@ -55,6 +78,7 @@ final class ReaderStore {
         self.persistenceURL = sample ? nil : persistenceURL
         text = ReaderSample.text
         settings = ReaderSettings()
+        if sample { settings.scrollMarginLines = 0 }
         var offset = 0
         if let url = self.persistenceURL, FileManager.default.fileExists(atPath: url.path) {
             do {
@@ -78,6 +102,7 @@ final class ReaderStore {
         index = restoredIndex(offset)
         reindexTokens()
         viewportEndIndex = index
+        refreshViewport(reset: true)
         if isWholeDocument { coarseTokenIndex = units.first?.tokens.lastIndex(where: { $0.sourceRange.location <= offset }) }
     }
     private func restoredIndex(_ offset: Int) -> Int {
@@ -92,6 +117,7 @@ final class ReaderStore {
         index = restoredIndex(offset)
         reindexTokens()
         viewportEndIndex = index
+        refreshViewport(reset: true)
         coarseTokenIndex = nil
         save()
     }
@@ -104,6 +130,7 @@ final class ReaderStore {
         index = 0
         reindexTokens()
         viewportEndIndex = index
+        refreshViewport(reset: true)
         coarseTokenIndex = nil
         save()
     }
@@ -121,7 +148,7 @@ final class ReaderStore {
         // Saturating bounds avoid integer overflow for arbitrary navigation input.
         if delta > 0 { index += min(delta, units.count - 1 - index) }
         if delta < 0 { index += max(delta, -index) }
-        viewportEndIndex = index
+        if usesContextWindow { refreshViewport() } else { viewportEndIndex = index }
         coarseTokenIndex = nil
         scheduleSave()
     }
@@ -143,7 +170,7 @@ final class ReaderStore {
         let target = current.sentenceIndex + (delta > 0 ? 1 : -1)
         guard let destination = units.firstIndex(where: { $0.sentenceIndex == target }) else { return }
         index = destination
-        viewportEndIndex = index
+        if usesContextWindow { refreshViewport() } else { viewportEndIndex = index }
         coarseTokenIndex = nil
         scheduleSave()
     }
@@ -176,7 +203,9 @@ final class ReaderStore {
         index = low
         focusedTokenIndex = target - tokenStarts[index]
         coarseTokenIndex = nil
-        if settings.presentation == .past && !isWholeDocument {
+        if usesContextWindow {
+            refreshViewport()
+        } else if settings.presentation == .past && !isWholeDocument {
             let slots = min(settings.pastLines, capacity)
             if index > viewportEndIndex { viewportEndIndex = index }
             if index < max(0, viewportEndIndex - slots) { viewportEndIndex = min(units.count - 1, index + slots) }
@@ -195,6 +224,7 @@ final class ReaderStore {
         focusedTokenIndex = nil
         reindexTokens()
         viewportEndIndex = index
+        refreshViewport(reset: true)
     }
     private func scheduleSave() {
         guard persistenceURL != nil else { return }
